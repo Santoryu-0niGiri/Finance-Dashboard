@@ -1,0 +1,107 @@
+.transactions-container {
+  max-width: 900px;
+  margin: 24px auto;
+  padding: 12px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tx-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.tx-form .row {
+  display: flex;
+  flex-direction: column;
+}
+
+.tx-form label {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.tx-form input,
+.tx-form select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.tx-form .actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tx-form button {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.tx-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tx-list li {
+  display: grid;
+  grid-template-columns: 120px 1fr 120px 140px;
+  gap: 12px;
+  padding: 10px;
+  border-bottom: 1px solid #f0f0f0;
+  align-items: center;
+}
+
+.tx-list .type {
+  font-weight: 700;
+  color: #333;
+}
+
+.tx-list .category {
+  color: #555;
+}
+
+.tx-list .amount {
+  text-align: right;
+  font-weight: 600;
+}
+
+.tx-list .date {
+  text-align: right;
+  color: #777;
+}
+
+.empty {
+  text-align: center;
+  padding: 18px;
+  color: #666;
+}

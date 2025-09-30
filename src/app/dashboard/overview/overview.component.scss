@@ -1,0 +1,67 @@
+.dashboard-container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.mt-3 {
+  margin-top: 16px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  margin-right: 1rem;
+  font-weight: 500;
+  font-size: medium;
+
+  mat-icon {
+    margin-right: 0.3rem;
+  }
+}
+
+.goal-item {
+  margin-bottom: 12px;
+}
+
+.full-charts-btn {
+  margin-left: 12px;
+}
+
+.overview-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  /* main content + sidebar */
+  gap: 20px;
+  align-items: start;
+}
+
+/* main column takes full width on small screens */
+@media (max-width: 1000px) {
+  .overview-layout {
+    grid-template-columns: 1fr;
+    /* stack */
+  }
+}
+
+/* small padding tweaks for sidebar */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* keep calendar card full width of sidebar */
+.sidebar mat-card {
+  width: 100%;
+  padding: 8px;
+}

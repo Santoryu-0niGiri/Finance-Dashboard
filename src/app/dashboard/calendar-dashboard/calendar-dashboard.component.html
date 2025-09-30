@@ -1,0 +1,67 @@
+<div class="calendar-root">
+  <div class="calendar-header">
+    <button mat-button (click)="prevMonth()">‹</button>
+    <div class="title">{{ getMonthTitle() }}</div>
+    <button mat-button (click)="nextMonth()">›</button>
+  </div>
+
+  <div class="weekday-row">
+    <div *ngFor="let w of ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']" class="weekday">{{ w }}</div>
+  </div>
+
+  <div class="days-grid">
+    <div *ngFor="let d of daysInMonth(); let i = index" class="day-cell" [class.empty]="d === null"
+      (click)="onSelectDay(d, i)">
+
+      <div class="day-number" *ngIf="d !== null">{{ d }}</div>
+
+      <!-- markers -->
+      <ng-container *ngIf="d !== null">
+        <!-- use daysIso() precomputed array to get iso -->
+        <ng-container *ngIf="daysIso()[i] as iso">
+          <ng-container *ngIf="getCountsForDate(iso).tx > 0 || getCountsForDate(iso).goals > 0">
+            <div class="markers">
+              <span class="marker tx" *ngIf="getCountsForDate(iso).tx > 0">{{ getCountsForDate(iso).tx }}</span>
+              <span class="marker goal" *ngIf="getCountsForDate(iso).goals > 0">G{{ getCountsForDate(iso).goals
+                }}</span>
+            </div>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- selected date panel -->
+  <div class="date-panel" *ngIf="selectedDate() as sd">
+    <h4>{{ sd | date:'fullDate' }}</h4>
+
+    <div class="items">
+      <div class="section">
+        <h5>Transactions ({{ getCountsForDate(sd).tx }})</h5>
+        <div *ngIf="getCountsForDate(sd).txs.length === 0">No transactions.</div>
+        <ul>
+          <li *ngFor="let t of getCountsForDate(sd).txs">
+            <strong>{{ t.type | titlecase }}</strong> — {{ t.categoryName || t.category || t.categoryId }} • ₱{{
+            t.amount }}
+          </li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h5>Goals ({{ getCountsForDate(sd).goals }})</h5>
+        <div *ngIf="getCountsForDate(sd).goalsList.length === 0">No goal deadlines.</div>
+        <ul>
+          <li *ngFor="let g of getCountsForDate(sd).goalsList">
+            <strong>{{ g.title }}</strong> • Target ₱{{ g.targetAmount || '—' }} • Saved ₱{{ g.currentAmount ||
+            g.savedAmount || 0 }}
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="panel-actions">
+      <button mat-button color="primary" (click)="addTransactionForDate()">+ Add Transaction</button>
+      <button mat-button color="accent" (click)="addGoalForDate()">+ Add Goal</button>
+    </div>
+  </div>
+</div>

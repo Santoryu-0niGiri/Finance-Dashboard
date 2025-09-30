@@ -1,0 +1,39 @@
+<div class="goals-container">
+  <h2>My Goals</h2>
+
+  <!-- Back to Dashboard -->
+  <button type="button" (click)="goBack()">⬅ Back to Dashboard</button>
+
+  <!-- Add Goal Form -->
+  <form [formGroup]="goalForm" (ngSubmit)="onSubmit()">
+    <label>Goal Title</label>
+    <input type="text" formControlName="title" placeholder="e.g. Emergency Fund" />
+
+    <label>Target Amount</label>
+    <input type="number" formControlName="targetAmount" placeholder="₱ target" />
+
+    <label>Current Amount</label>
+    <input type="number" formControlName="currentAmount" placeholder="₱ saved so far" />
+
+    <label>Target Date</label>
+    <input type="date" formControlName="targetDate" />
+
+    <button type="submit" [disabled]="goalForm.invalid">Add Goal</button>
+  </form>
+
+  <hr />
+
+  <!-- Goals List -->
+  <h3>My Goals</h3>
+  <ul>
+    <li *ngFor="let g of goals">
+      <strong>{{ g.title }}</strong> — Target: ₱{{ g.targetAmount }},
+      Saved: ₱{{ g.currentAmount }},
+      Deadline: {{ g.targetDate }}
+    </li>
+  </ul>
+
+  <div *ngIf="goals?.length === 0">
+    No goals yet. Add one above!
+  </div>
+</div>

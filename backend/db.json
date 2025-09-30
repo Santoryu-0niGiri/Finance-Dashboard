@@ -1,0 +1,93 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "email": "test@example.com",
+      "password": "123456",
+      "name": "Test User"
+    },
+    {
+      "id": "731c",
+      "name": "yancey",
+      "email": "yancey@pogi.com",
+      "password": "1234567"
+    },
+    {
+      "id": "2484",
+      "name": "tam",
+      "email": "tamtambaroma@gmail.com",
+      "password": "tamtam07"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "1",
+      "userId": 1,
+      "type": "expense",
+      "category": "Food",
+      "amount": 500,
+      "date": "2025-09-21"
+    },
+    {
+      "id": "e2fe",
+      "type": "income",
+      "category": "Food",
+      "amount": 5000,
+      "date": "2025-09-22",
+      "userId": "1"
+    },
+    {
+      "id": "f938",
+      "type": "expense",
+      "category": "food",
+      "amount": 5000,
+      "date": "2025-09-22",
+      "userId": "2484"
+    },
+    {
+      "id": "b4de",
+      "type": "income",
+      "category": "work",
+      "amount": 15000,
+      "date": "2025-09-15",
+      "userId": "2484"
+    },
+    {
+      "id": "a8fc",
+      "type": "income",
+      "category": "Salary",
+      "amount": 20000,
+      "date": "2025-09-23",
+      "userId": "1"
+    },
+    {
+      "id": "1329",
+      "type": "expense",
+      "category": "Transport",
+      "amount": 2000,
+      "date": "2025-09-22",
+      "userId": "1"
+    },
+    
+    {
+      "id": "dc15",
+      "userId": "1",
+      "type": "goals",
+      "amount": 15000,
+      "date": "2025-09-30",
+      "notes": "",
+      "goalId": "1",
+      "goalName": "Emergency Fund"
+    }
+  ],
+  "goals": [
+    {
+      "id": "1",
+      "userId": 1,
+      "title": "Emergency Fund",
+      "targetAmount": 50000,
+      "currentAmount": 25000,
+      "targetDate": "2025-12-31"
+    }
+  ]
+}
