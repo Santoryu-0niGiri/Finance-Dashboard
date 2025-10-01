@@ -1,23 +1,57 @@
 <div class="calendar-root">
   <div class="calendar-header">
-    <button mat-button (click)="prevMonth()">‹</button>
+    <div class="left-controls">
+      <button mat-button (click)="prevMonth()" aria-label="Previous month">‹</button>
+
+      <mat-select [value]="viewMonth()" (selectionChange)="setMonth($event.value)" disableRipple>
+        <mat-option *ngFor="let m of months; let i = index" [value]="i">{{ m }}</mat-option>
+      </mat-select>
+
+      <mat-select [value]="viewYear()" (selectionChange)="setYear($event.value)" disableRipple>
+        <mat-option *ngFor="let y of getYears(11)" [value]="y">{{ y }}</mat-option>
+      </mat-select>
+
+      <button mat-button (click)="nextMonth()" aria-label="Next month">›</button>
+    </div>
+
     <div class="title">{{ getMonthTitle() }}</div>
-    <button mat-button (click)="nextMonth()">›</button>
+
+    <div class="right-controls">
+      <mat-button-toggle-group [value]="selectionMode()" (change)="setSelectionMode($event.value)" name="selMode"
+        aria-label="Selection mode">
+        <mat-button-toggle value="day">Day</mat-button-toggle>
+        <mat-button-toggle value="month">Month</mat-button-toggle>
+        <mat-button-toggle value="year">Year</mat-button-toggle>
+      </mat-button-toggle-group>
+
+      <button mat-stroked-button (click)="openSummary('week')"><mat-icon>calendar_view_week</mat-icon> Summary
+        (Week)</button>
+      <button mat-stroked-button (click)="openSummary('month')"><mat-icon>calendar_view_month</mat-icon> Summary
+        (Month)</button>
+      <button mat-stroked-button (click)="openSummary('year')"><mat-icon>calendar_today</mat-icon> Summary
+        (Year)</button>
+
+      <button mat-button color="primary" (click)="goToToday()" title="Go to today">
+        <mat-icon>today</mat-icon> Today
+      </button>
+
+      <button mat-icon-button (click)="refreshToday(false)" title="Refresh system date snapshot">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
   </div>
 
-  <div class="weekday-row">
+  <div class="weekday-row" role="row">
     <div *ngFor="let w of ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']" class="weekday">{{ w }}</div>
   </div>
 
-  <div class="days-grid">
+  <div class="days-grid" role="grid">
     <div *ngFor="let d of daysInMonth(); let i = index" class="day-cell" [class.empty]="d === null"
-      (click)="onSelectDay(d, i)">
-
+      [class.selected]="daysIso()[i] === selectedDate()" [class.in-selected-month]="isInSelectedMonth(i)"
+      [class.in-selected-year]="isInSelectedYear(i)" [class.is-today]="isTodayCell(i)" (click)="onSelectDay(d, i)">
       <div class="day-number" *ngIf="d !== null">{{ d }}</div>
 
-      <!-- markers -->
       <ng-container *ngIf="d !== null">
-        <!-- use daysIso() precomputed array to get iso -->
         <ng-container *ngIf="daysIso()[i] as iso">
           <ng-container *ngIf="getCountsForDate(iso).tx > 0 || getCountsForDate(iso).goals > 0">
             <div class="markers">
@@ -31,7 +65,7 @@
     </div>
   </div>
 
-  <!-- selected date panel -->
+  <!-- selected date panel (shown when a single date is selected in Day mode) -->
   <div class="date-panel" *ngIf="selectedDate() as sd">
     <h4>{{ sd | date:'fullDate' }}</h4>
 
