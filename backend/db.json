@@ -68,7 +68,6 @@
       "date": "2025-09-22",
       "userId": "1"
     },
-    
     {
       "id": "dc15",
       "userId": "1",
@@ -78,6 +77,16 @@
       "notes": "",
       "goalId": "1",
       "goalName": "Emergency Fund"
+    },
+    {
+      "id": "8cb6",
+      "userId": "1",
+      "type": "income",
+      "amount": 6000,
+      "date": "2025-09-30",
+      "notes": "",
+      "categoryId": "salary",
+      "categoryName": "Salary"
     }
   ],
   "goals": [
