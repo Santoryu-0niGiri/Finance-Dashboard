@@ -1,10 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../services/auth.service';
-import { catchError, of, switchMap } from 'rxjs';
+import { AuthService } from '../../core/services/auth.service';
+import { Transaction, Category } from '../../shared/interfaces';
+import { TransactionType } from '../../shared/enums';
+import { CategoryUtils } from '../../shared/utils';
+import { catchError, of, switchMap, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-transactions',
@@ -13,26 +16,13 @@ import { catchError, of, switchMap } from 'rxjs';
   templateUrl: './transactions.component.html',
   styleUrls: ['./transactions.component.scss']
 })
-export class TransactionsComponent {
+export class TransactionsComponent implements OnDestroy {
   transactionForm: FormGroup;
   transactions: any[] = [];
   apiUrl = 'http://localhost:3000/transactions';
   goalsUrl = 'http://localhost:3000/goals';
 
-  // static options for income/expense (id/name pairs)
-  categoryOptionsStatic: { [key: string]: { id: string; name: string }[] } = {
-    income: [
-      { id: 'salary', name: 'Salary' },
-      { id: 'allowance', name: 'Allowance' }
-    ],
-    expense: [
-      { id: 'food', name: 'Food' },
-      { id: 'rent', name: 'Rent' },
-      { id: 'transport', name: 'Transport' },
-      { id: 'utilities', name: 'Utilities' },
-      { id: 'others', name: 'Others' }
-    ]
-  };
+
 
   // categories to show in the template (id/name)
   availableCategories: { id: string; name: string }[] = [];
@@ -41,12 +31,14 @@ export class TransactionsComponent {
   userGoals: { id: string | number; title: string; currentAmount?: number }[] = [];
 
   loadingGoals = false;
+  private subscriptions = new Subscription();
 
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {
     this.transactionForm = this.fb.group({
       type: ['', Validators.required],        // 'income' | 'expense' | 'goals'
@@ -57,16 +49,27 @@ export class TransactionsComponent {
     });
 
     // react to type changes to set categories
-    this.transactionForm.get('type')?.valueChanges.subscribe((selectedType) => {
-      this.transactionForm.get('category')?.reset();
-      this.availableCategories = [];
+    this.subscriptions.add(
+      this.transactionForm.get('type')?.valueChanges.subscribe((selectedType) => {
+        this.transactionForm.get('category')?.reset();
+        this.availableCategories = [];
 
-      if (selectedType === 'goals') {
-        this.loadGoalsForCurrentUser();
-      } else if (selectedType === 'income' || selectedType === 'expense') {
-        this.availableCategories = this.categoryOptionsStatic[selectedType] || [];
-      }
-    });
+        if (selectedType === 'goals') {
+          this.loadGoalsForCurrentUser();
+        } else if (selectedType === 'income' || selectedType === 'expense') {
+          this.availableCategories = CategoryUtils.getCategoriesForType(selectedType);
+        }
+      })
+    );
+
+    // check for date query parameter and set it
+    this.subscriptions.add(
+      this.route.queryParams.subscribe(params => {
+        if (params['date']) {
+          this.transactionForm.patchValue({ date: params['date'] });
+        }
+      })
+    );
 
     // initial load of transactions for the user (if logged in)
     this.loadTransactions();
@@ -247,6 +250,10 @@ export class TransactionsComponent {
   }
   goToGoals() {
     this.router.navigate(['/dashboard/goals']);
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 
   // helper to read the current user from AuthService (your service uses signals)

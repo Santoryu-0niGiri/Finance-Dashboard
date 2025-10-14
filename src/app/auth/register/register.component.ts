@@ -5,7 +5,7 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatButtonModule } from "@angular/material/button";
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { AuthService } from '../../core/services/auth.service';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 
 @Component({
@@ -35,7 +35,12 @@ export class RegisterComponent {
 
   onRegister() {
     if (this.registerForm.valid) {
-      const user = this.registerForm.value;
+      const formValue = this.registerForm.value;
+      const user = {
+        name: formValue.name || '',
+        email: formValue.email || '',
+        password: formValue.password || ''
+      };
 
       this.auth.register(user).subscribe({
         next: (response) => {

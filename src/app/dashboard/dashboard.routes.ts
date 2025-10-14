@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { OverviewComponent } from './overview/overview.component';
 import { TransactionsComponent } from './transactions/transactions.component';
 import { GoalsComponent } from './goals/goals.component';
-import { AuthGuard } from '../services/auth.guard';
+import { AuthGuard } from '../core/guards/auth.guard';
 import { CalendarDashboardComponent } from './calendar-dashboard/calendar-dashboard.component';
 
 export const DASHBOARD_ROUTES: Routes = [

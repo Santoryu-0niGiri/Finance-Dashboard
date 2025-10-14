@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { delay, Observable, tap } from 'rxjs';
+import { User } from '../../shared/interfaces';
 
 @Injectable({
   providedIn: 'root'
@@ -9,10 +10,7 @@ import { delay, Observable, tap } from 'rxjs';
 export class AuthService {
   private apiUrl = 'http://localhost:3000/users';
 
-  // 🔹 Signal to hold the current user
-  private currentUser = signal<any | null>(null);
-
-  // expose a readonly signal for components
+  private currentUser = signal<User | null>(null);
   user = this.currentUser.asReadonly();
 
   constructor(private http: HttpClient, private router: Router) {
@@ -23,15 +21,15 @@ export class AuthService {
     }
   }
 
-  register(user: any): Observable<any> {
-    return this.http.post(this.apiUrl, user);
+  register(user: Partial<User>): Observable<User> {
+    return this.http.post<User>(this.apiUrl, user);
   }
 
-  login(email: string, password: string): Observable<any[]> {
+  login(email: string, password: string): Observable<User[]> {
     return this.http
-      .get<any[]>(`${this.apiUrl}?email=${email}&password=${password}`)
+      .get<User[]>(`${this.apiUrl}?email=${email}&password=${password}`)
       .pipe(
-    delay(500),
+        delay(500),
         tap(users => {
           if (users.length > 0) {
             this.saveUser(users[0]);
@@ -40,9 +38,9 @@ export class AuthService {
       );
   }
 
-  saveUser(user: any) {
+  saveUser(user: User) {
     localStorage.setItem('user', JSON.stringify(user));
-    this.currentUser.set(user); // 🔹 update signal
+    this.currentUser.set(user);
   }
 
   getUser() {
@@ -51,7 +49,7 @@ export class AuthService {
 
   logout() {
     localStorage.removeItem('user');
-    this.currentUser.set(null); // 🔹 clear signal
+    this.currentUser.set(null);
     this.router.navigate(['/']);
   }
 

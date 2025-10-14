@@ -1,27 +1,22 @@
-/* overview-charts.component.scss */
-
 .charts-wrapper {
   width: 100%;
   box-sizing: border-box;
   padding: 12px;
 }
 
-/* Empty state */
 .no-data {
   padding: 24px;
-  color: #666;
+  color: var(--muted);
   text-align: center;
   font-style: italic;
 }
 
-/* Container that holds all chart rows */
 .charts-container {
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-/* A row that can contain one or more chart boxes side-by-side */
 .chart-row {
   display: flex;
   gap: 24px;
@@ -29,15 +24,13 @@
   align-items: stretch;
 }
 
-/* single chart card */
 .chart-box {
   flex: 1 1 420px;
-  /* grow | shrink | basis */
   min-width: 300px;
-  background: #ffffff;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), var(--surface));
   padding: 14px;
   border-radius: 10px;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--card-elev);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -46,42 +39,29 @@
     margin: 0;
     font-size: 1.05rem;
     font-weight: 600;
-    color: #222;
+    color: var(--text);
   }
 
   .chart-canvas {
     height: 320px;
-    /* canvas height */
     position: relative;
     width: 100%;
 
-    /* Ensure the canvas element fills the parent */
     canvas {
       display: block;
       width: 100% !important;
       height: 100% !important;
     }
   }
-
-  /* small helper text under the chart if needed */
-  .helper {
-    font-size: 0.875rem;
-    color: #666;
-    margin-top: 6px;
-  }
 }
 
-/* utility spacing used in template */
 .mt-3 {
   margin-top: 1rem;
 }
 
-/* responsive tweaks */
 @media (max-width: 1000px) {
-  .chart-box {
-    .chart-canvas {
-      height: 300px;
-    }
+  .chart-box .chart-canvas {
+    height: 300px;
   }
 }
 
@@ -100,7 +80,7 @@
   }
 }
 
-/* small polish for chart labels/legend overflow */
+/* Legend overflow */
 .chart-box .legend {
   max-width: 100%;
   overflow: hidden;

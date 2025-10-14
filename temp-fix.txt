@@ -1,0 +1,21 @@
+// Replace the getYears method with this dynamic version:
+
+getYears() {
+  const currentYear = new Date().getFullYear();
+  const viewYear = this.viewYear();
+  const years: number[] = [];
+  
+  // Dynamic range: always include 10 years back and 10 years forward from current view
+  const startYear = Math.min(currentYear - 10, viewYear - 5);
+  const endYear = Math.max(currentYear + 10, viewYear + 5);
+  
+  for (let i = startYear; i <= endYear; i++) {
+    years.push(i);
+  }
+  
+  return years;
+}
+
+// And update the HTML template to remove the parameter:
+// Change: getYears(11)
+// To: getYears()
