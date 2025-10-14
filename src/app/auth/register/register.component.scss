@@ -1,80 +1,95 @@
 .register-container {
-  display: grid;
-  place-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   min-height: 100vh;
-  padding: 1rem;
-  background: linear-gradient(135deg, var(--accent-50) 0%, var(--accent-100) 100%);
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
 
-  mat-card {
-    width: min(450px, 100%);
-    padding: 2rem;
-    border-radius: 1rem;
-    box-shadow: 0 10px 25px var(--shadow-color-hover);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    
-    mat-card-header {
-      text-align: center;
-      margin-bottom: 1.5rem;
-      
-      mat-card-title {
-        font-size: 1.75rem;
-        font-weight: 600;
-        color: var(--text);
-      }
-      
-      mat-card-subtitle {
-        color: var(--muted);
-        margin-top: 0.5rem;
-      }
-    }
+mat-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+mat-card-title {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+mat-form-field {
+  margin-bottom: 1rem;
+}
+
+button[mat-raised-button] {
+  height: 48px;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #1976d2 !important;
+  color: white !important;
+
+  mat-icon {
+    margin-right: 8px;
   }
 
-  .full-width {
-    width: 100%;
-    margin-bottom: 1rem;
-    
-    mat-form-field {
-      width: 100%;
-      
-      .mat-mdc-form-field {
-        border-radius: 0.5rem;
-      }
-    }
-    
-    button {
-      width: 100%;
-      height: 3rem;
-      border-radius: 0.5rem;
-      font-weight: 500;
-      font-size: 1rem;
-      transition: all 0.2s ease;
-      
-      &:hover:not(:disabled) {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px var(--accent-shadow);
-      }
-      
-      &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-    }
+  &:disabled {
+    background-color: #1976d2 !important;
+    opacity: 0.6;
+    color: white !important;
+    cursor: not-allowed;
   }
-  
-  .auth-links {
-    text-align: center;
-    margin-top: 1rem;
-    
-    a {
-      color: var(--primary);
-      text-decoration: none;
-      font-weight: 500;
-      transition: color 0.2s ease;
-      
-      &:hover {
-        color: var(--primary-dark);
-      }
-    }
+}
+
+button[mat-stroked-button] {
+  height: 48px;
+  font-size: 1rem;
+  border: 2px solid currentColor !important;
+  background: transparent !important;
+  color: var(--primary, #1976d2) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  mat-icon {
+    margin-right: 8px;
+  }
+}
+
+.auth-divider {
+  text-align: center;
+  margin: 1.5rem 0;
+  position: relative;
+
+  span {
+    background: var(--surface, white);
+    padding: 0 1rem;
+    color: var(--text, #666);
+    font-size: 0.9rem;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #e0e0e0;
+    z-index: -1;
   }
 }

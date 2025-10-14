@@ -28,16 +28,22 @@
         <button mat-raised-button color="primary" type="submit" class="full-width"
           [disabled]="loginForm.invalid || loading()">
           <ng-container *ngIf="!loading(); else spinner">
-            Login
+            <mat-icon>login</mat-icon>
+            Sign In
           </ng-container>
           <ng-template #spinner>
-            <span class="spinner"></span> Logging in...
+            <mat-icon>hourglass_empty</mat-icon> Signing in...
           </ng-template>
         </button>
       </form>
 
-    <button mat-button color="accent" routerLink="/register" type="button" (click)="onCreateAccountClick()">
-        Create Account
+      <div class="auth-divider">
+        <span>Don't have an account?</span>
+      </div>
+
+      <button mat-stroked-button color="primary" type="button" (click)="onCreateAccountClick()" class="full-width">
+        <mat-icon>person_add</mat-icon>
+        Create New Account
       </button>
     </mat-card-content>
   </mat-card>

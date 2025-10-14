@@ -1,84 +1,139 @@
 <div class="transactions-container">
-  <div class="top-row">
-    <button type="button" class="back-btn" (click)="goBack()">⬅ Back to Dashboard</button>
-
-    <!-- ✅ Add Goals button -->
-    <button type="button" class="add-goal-btn" (click)="goToGoals()">➕ Add Goals</button>
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <button mat-icon-button class="back-btn" (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-text">
+        <h1>Transactions</h1>
+        <p>Manage your income, expenses, and goal contributions</p>
+      </div>
+    </div>
+    <div class="header-stats">
+      <div class="stat-item">
+        <span class="stat-value">{{ transactions.length || 0 }}</span>
+        <span class="stat-label">Total</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">₱{{ getTotalAmount() }}</span>
+        <span class="stat-label">Amount</span>
+      </div>
+    </div>
   </div>
 
-  <!-- Add Transaction Form -->
-  <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()" class="tx-form">
-    <div class="row">
-      <label>Type</label>
-      <select formControlName="type">
-        <option value="">-- Select Type --</option>
-        <option value="income">Income</option>
-        <option value="expense">Expense</option>
-        <option value="goals">Goals</option>
-      </select>
+  <!-- Form Section -->
+  <div class="form-section">
+    <div class="form-header">
+      <div>
+        <mat-icon>add_circle</mat-icon>
+        <h2>Add New Transaction</h2>
+      </div>
     </div>
 
-    <div class="row">
-      <label>Category</label>
-
-      <!-- WHEN type === 'goals' : show goals list -->
-      <ng-container *ngIf="transactionForm.get('type')?.value === 'goals'; else normalCategory">
-        <select formControlName="category" [disabled]="loadingGoals || availableCategories.length === 0">
-          <option value="">-- Select Goal --</option>
-          <option *ngFor="let cat of availableCategories" [value]="cat.id">{{ cat.name }}</option>
-        </select>
-
-        <div class="helper" *ngIf="loadingGoals">Loading goals...</div>
-        <div class="helper" *ngIf="!loadingGoals && availableCategories.length === 0">
-          No goals found. <a routerLink="/goals">Create a goal</a>
+    <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()" class="transaction-form">
+      <div class="form-row">
+        <div class="form-field">
+          <label>Type</label>
+          <select formControlName="type">
+            <option value="">-- Select Type --</option>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+            <option value="goals">Goals</option>
+          </select>
         </div>
-      </ng-container>
 
-      <!-- default (income / expense) -->
-      <ng-template #normalCategory>
-        <select formControlName="category" [disabled]="availableCategories.length === 0">
-          <option value="">-- Select Category --</option>
-          <option *ngFor="let cat of availableCategories" [value]="cat.id">{{ cat.name }}</option>
-        </select>
-      </ng-template>
+        <div class="form-field">
+          <label>Category</label>
+          <!-- WHEN type === 'goals' : show goals list -->
+          <ng-container *ngIf="transactionForm.get('type')?.value === 'goals'; else normalCategory">
+            <select formControlName="category">
+              <option value="">-- Select Goal --</option>
+              <option *ngFor="let cat of availableCategories" [value]="cat.id">{{ cat.name }}</option>
+            </select>
+            <div class="helper" *ngIf="loadingGoals">Loading goals...</div>
+            <div class="helper" *ngIf="!loadingGoals && availableCategories.length === 0">
+              No goals found. <a routerLink="/goals">Create a goal</a>
+            </div>
+          </ng-container>
+          <!-- default (income / expense) -->
+          <ng-template #normalCategory>
+            <select formControlName="category">
+              <option value="">-- Select Category --</option>
+              <option *ngFor="let cat of availableCategories" [value]="cat.id">{{ cat.name }}</option>
+            </select>
+          </ng-template>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label>Amount</label>
+          <input type="number" formControlName="amount" placeholder="Enter amount" />
+        </div>
+
+        <div class="form-field">
+          <label>Date</label>
+          <input type="date" formControlName="date" />
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button mat-raised-button type="submit" [disabled]="transactionForm.invalid">
+          <mat-icon>add</mat-icon>
+          Add Transaction
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Transactions Section -->
+  <div class="transactions-section">
+    <div class="section-header">
+      <div class="section-title">
+        <mat-icon>history</mat-icon>
+        <h2>Transaction History</h2>
+      </div>
+      <div class="transactions-count">
+        {{ transactions.length || 0 }} transactions
+      </div>
     </div>
 
-    <div class="row">
-      <label>Amount</label>
-      <input type="number" formControlName="amount" placeholder="Enter amount" />
+    <div class="transactions-grid" *ngIf="transactions.length > 0">
+      <div class="transaction-card" *ngFor="let t of transactions">
+        <div class="transaction-header">
+          <div class="transaction-info">
+            <div class="transaction-type">
+              <span class="type-badge" [ngClass]="t.type">{{ t.type | titlecase }}</span>
+            </div>
+            <div class="transaction-category">
+              <ng-container *ngIf="t.type === 'goals'">
+                {{ t.goalName || t.goalId }}
+              </ng-container>
+              <ng-container *ngIf="t.type !== 'goals'">
+                {{ t.categoryName || t.category || t.categoryId }}
+              </ng-container>
+            </div>
+          </div>
+        </div>
+
+        <div class="transaction-details">
+          <div class="amount-item">
+            <span class="amount-label">Amount</span>
+            <span class="amount-value" [ngClass]="{positive: t.type === 'income', negative: t.type === 'expense'}">₱{{ t.amount }}</span>
+          </div>
+          <div class="date-item">
+            <span class="date-label">Date</span>
+            <span class="date-value">{{ t.date }}</span>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="row">
-      <label>Date</label>
-      <input type="date" formControlName="date" />
+    <div *ngIf="transactions?.length === 0" class="empty">
+      <div class="empty-icon">💳</div>
+      <div class="empty-title">No transactions yet</div>
+      <div class="empty-subtitle">Add your first transaction to get started</div>
     </div>
-
-    <div class="actions">
-      <button type="submit" [disabled]="transactionForm.invalid">Add Transaction</button>
-    </div>
-  </form>
-
-  <hr />
-
-  <!-- Transaction History -->
-  <h3>Transaction History</h3>
-  <ul class="tx-list">
-    <li *ngFor="let t of transactions">
-      <span class="type">{{ t.type | titlecase }}</span>
-      <span class="category">
-        <ng-container *ngIf="t.type === 'goals'">
-          {{ t.goalName || t.goalId }}
-        </ng-container>
-        <ng-container *ngIf="t.type !== 'goals'">
-          {{ t.categoryName || t.category || t.categoryId }}
-        </ng-container>
-      </span>
-      <span class="amount">₱{{ t.amount }}</span>
-      <span class="date">{{ t.date }}</span>
-    </li>
-  </ul>
-
-  <div *ngIf="transactions?.length === 0" class="empty">
-    No transactions yet.
   </div>
 </div>
