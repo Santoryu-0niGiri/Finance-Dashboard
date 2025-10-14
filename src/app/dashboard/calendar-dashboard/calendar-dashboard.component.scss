@@ -1,52 +1,74 @@
+/* calendar.component.scss (replace existing) */
 .calendar-root {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 8px;
+  box-sizing: border-box;
 
-  .calendar-header {
+  /* top toolbar containing left + right controls */
+  .calendar-controls {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .controls-left,
+  .controls-right {
     display: flex;
     align-items: center;
     gap: 8px;
-    justify-content: space-between;
+    flex: 0 1 auto;
+    min-width: 0;
+  }
 
-    .left-controls,
-    .right-controls {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+  .controls-left {
+
+    /* left group keeps compact sizes */
+    mat-form-field.compact-select {
+      min-width: 88px;
+      width: auto;
     }
 
-    .title {
-      font-weight: 700;
-      font-size: 1rem;
-      flex: 1 1 auto;
-      text-align: center;
-    }
-
-    mat-select {
-      min-width: 120px;
-    }
-
-    button {
+    button.mat-icon-button {
       min-width: 36px;
       height: 36px;
-      border-radius: 8px;
-    }
-
-    .right-controls button[mat-stroked-button] {
-      text-transform: none;
-      display: flex;
-      gap: 6px;
-      align-items: center;
     }
   }
 
+  .controls-right {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  /* centered month title below the controls */
+  .calendar-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 4px;
+  }
+
+  .center-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  /* grid remains intact */
   .weekday-row {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 6px;
-    color: #666;
+    color: var(--muted);
     font-weight: 600;
     font-size: 0.85rem;
   }
@@ -55,6 +77,8 @@
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 6px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .day-cell {
@@ -68,135 +92,190 @@
     transition: background-color 0.18s ease, transform 0.12s ease;
     cursor: pointer;
     position: relative;
-
-    &.empty {
-      background: transparent;
-      cursor: default;
-      opacity: 0.35;
-    }
-
-    &:not(.empty):hover {
-      background-color: #f1f5f9;
-      transform: translateY(-2px);
-    }
-
-    &.selected {
-      background: linear-gradient(180deg, rgba(74, 144, 226, 0.16), rgba(74, 144, 226, 0.08));
-      box-shadow: 0 6px 18px rgba(74, 144, 226, 0.08);
-    }
-
-    &.in-selected-month {
-      background: linear-gradient(180deg, rgba(75, 181, 141, 0.08), rgba(75, 181, 141, 0.03));
-      box-shadow: inset 0 0 0 2px rgba(75, 181, 141, 0.06);
-    }
-
-    &.in-selected-year {
-      background: linear-gradient(180deg, rgba(245, 166, 35, 0.06), rgba(245, 166, 35, 0.02));
-      box-shadow: inset 0 0 0 1px rgba(245, 166, 35, 0.04);
-    }
-
-    &.is-today {
-      outline: 2px solid rgba(74, 144, 226, 0.16);
-      box-shadow: 0 3px 8px rgba(74, 144, 226, 0.06);
-    }
-
-    .day-number {
-      font-weight: 600;
-      font-size: 0.95rem;
-      color: #222;
-    }
-
-    .markers {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-      justify-content: flex-start;
-      margin-top: 6px;
-
-      .marker {
-        display: inline-block;
-        padding: 2px 6px;
-        border-radius: 999px;
-        font-size: 0.75rem;
-        font-weight: 600;
-      }
-
-      .tx {
-        background: rgba(75, 181, 141, 0.12);
-        color: #2a7a4a;
-      }
-
-      .goal {
-        background: rgba(245, 166, 35, 0.12);
-        color: #b36b00;
-      }
-    }
+    color: var(--text);
+    min-width: 0;
   }
 
-  .date-panel {
+  .day-cell.empty {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .day-number {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+
+  .markers {
+    display: flex;
+    gap: 6px;
     margin-top: 6px;
-    background: #fff;
-    border-radius: 10px;
-    padding: 12px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
-    transition: transform 0.14s ease, opacity 0.2s ease;
+    align-items: center;
+  }
 
-    h4 {
-      margin: 0 0 8px 0;
+  /* selected/today states */
+  .day-cell.selected {
+    background: linear-gradient(180deg, rgba(59, 130, 246, 0.14), rgba(59, 130, 246, 0.06));
+    box-shadow: 0 6px 18px rgba(59, 130, 246, 0.06);
+  }
+
+  .day-cell.is-today {
+    outline: 2px solid rgba(59, 130, 246, 0.12);
+    box-shadow: 0 3px 8px rgba(59, 130, 246, 0.05);
+  }
+
+  /* refresh button spinner animation */
+  .spinning {
+    animation: spin 0.8s linear infinite;
+  }
+  
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
     }
-
-    .items {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-
-      .section {
-        h5 {
-          margin: 0 0 8px 0;
-          font-size: 0.95rem;
-        }
-
-        ul {
-          margin: 0;
-          padding-left: 16px;
-
-          li {
-            margin-bottom: 6px;
-            font-size: 0.95rem;
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  /* responsiveness */
+  /* date panel styling */
+  .date-panel {
+    margin-top: 16px;
+    padding: 1.5rem;
+    background: var(--surface-variant);
+    border-radius: 0.75rem;
+    border: 1px solid var(--outline-variant);
+    
+    h4 {
+      margin: 0 0 1rem 0;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 1.125rem;
+    }
+    
+    .date-summary {
+      margin-bottom: 1.5rem;
+      
+      .summary-stats {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        
+        .stat {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.5rem 0.75rem;
+          background: var(--primary-container);
+          color: var(--on-primary-container);
+          border-radius: 1rem;
+          font-size: 0.875rem;
+          font-weight: 500;
+          
+          mat-icon {
+            font-size: 1rem;
+            width: 1rem;
+            height: 1rem;
           }
         }
       }
+      
+      .items-list {
+        margin-bottom: 1rem;
+        
+        h5 {
+          margin: 0 0 0.75rem 0;
+          color: var(--text);
+          font-weight: 600;
+          font-size: 1rem;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          
+          &::before {
+            content: '';
+            width: 3px;
+            height: 1rem;
+            background: var(--primary);
+            border-radius: 2px;
+          }
+        }
+        
+        .item {
+          background: var(--surface);
+          border: 1px solid var(--outline-variant);
+          border-radius: 0.5rem;
+          padding: 0.75rem;
+          margin-bottom: 0.5rem;
+          
+          .item-type {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+          }
+          
+          .item-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+            color: var(--muted);
+            
+            .amount {
+              font-weight: 600;
+              color: var(--text);
+            }
+            
+            .saved {
+              color: var(--success);
+              font-weight: 500;
+            }
+          }
+          
+          .item-note {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 0.25rem;
+            font-style: italic;
+          }
+        }
+      }
+      
+      .empty-message {
+        text-align: center;
+        padding: 2rem 1rem;
+        color: var(--muted);
+        font-style: italic;
+      }
     }
-
+    
     .panel-actions {
-      margin-top: 12px;
       display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .calendar-controls {
       gap: 8px;
     }
-  }
 
-  @media (max-width: 1000px) {
-    .calendar-header .title {
+    .controls-left,
+    .controls-right {
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    .center-title {
       text-align: left;
+      padding-left: 6px;
     }
 
-    .right-controls {
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-  }
-
-  @media (max-width: 800px) {
-    .date-panel .items {
-      grid-template-columns: 1fr;
-    }
-
-    .day-cell {
-      min-height: 48px;
-    }
-
-    mat-select {
-      min-width: 100px;
+    mat-form-field.compact-select {
+      min-width: 72px;
     }
   }
 }

@@ -1,22 +1,30 @@
+<!-- calendar.component.html (replace existing template) -->
 <div class="calendar-root">
-  <div class="calendar-header">
-    <div class="left-controls">
-      <button mat-button (click)="prevMonth()" aria-label="Previous month">‹</button>
+  <!-- controls toolbar on top (left + right groups) -->
+  <div class="calendar-controls">
+    <div class="controls-left">
+      <button mat-icon-button (click)="prevMonth()" aria-label="Previous month">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
 
-      <mat-select [value]="viewMonth()" (selectionChange)="setMonth($event.value)" disableRipple>
-        <mat-option *ngFor="let m of months; let i = index" [value]="i">{{ m }}</mat-option>
-      </mat-select>
+      <mat-form-field appearance="outline" class="compact-select">
+        <mat-select [value]="viewMonth()" (selectionChange)="setMonth($event.value)" disableRipple>
+          <mat-option *ngFor="let m of months; let i = index" [value]="i">{{ m }}</mat-option>
+        </mat-select>
+      </mat-form-field>
 
-      <mat-select [value]="viewYear()" (selectionChange)="setYear($event.value)" disableRipple>
-        <mat-option *ngFor="let y of getYears(11)" [value]="y">{{ y }}</mat-option>
-      </mat-select>
+      <mat-form-field appearance="outline" class="compact-select">
+        <mat-select [value]="viewYear()" (selectionChange)="setYear($event.value)" disableRipple>
+          <mat-option *ngFor="let y of getYears(11)" [value]="y">{{ y }}</mat-option>
+        </mat-select>
+      </mat-form-field>
 
-      <button mat-button (click)="nextMonth()" aria-label="Next month">›</button>
+      <button mat-icon-button (click)="nextMonth()" aria-label="Next month">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
     </div>
 
-    <div class="title">{{ getMonthTitle() }}</div>
-
-    <div class="right-controls">
+    <div class="controls-right">
       <mat-button-toggle-group [value]="selectionMode()" (change)="setSelectionMode($event.value)" name="selMode"
         aria-label="Selection mode">
         <mat-button-toggle value="day">Day</mat-button-toggle>
@@ -24,21 +32,24 @@
         <mat-button-toggle value="year">Year</mat-button-toggle>
       </mat-button-toggle-group>
 
-      <button mat-stroked-button (click)="openSummary('week')"><mat-icon>calendar_view_week</mat-icon> Summary
-        (Week)</button>
-      <button mat-stroked-button (click)="openSummary('month')"><mat-icon>calendar_view_month</mat-icon> Summary
-        (Month)</button>
-      <button mat-stroked-button (click)="openSummary('year')"><mat-icon>calendar_today</mat-icon> Summary
-        (Year)</button>
+      <button mat-stroked-button (click)="openSummary('week')"><mat-icon>calendar_view_week</mat-icon> Week</button>
+      <button mat-stroked-button (click)="openSummary('month')"><mat-icon>calendar_view_month</mat-icon> Month</button>
+      <button mat-stroked-button (click)="openSummary('year')"><mat-icon>calendar_today</mat-icon> Year</button>
 
-      <button mat-button color="primary" (click)="goToToday()" title="Go to today">
-        <mat-icon>today</mat-icon> Today
+      <button mat-flat-button color="primary" (click)="goToToday()" title="Go to today">
+        <mat-icon>today</mat-icon>
+        Today
       </button>
 
-      <button mat-icon-button (click)="refreshToday(false)" title="Refresh system date snapshot">
-        <mat-icon>refresh</mat-icon>
+      <button mat-icon-button (click)="refreshToday(false)" title="Refresh system date snapshot" [disabled]="isRefreshing()">
+        <mat-icon [class.spinning]="isRefreshing()">refresh</mat-icon>
       </button>
     </div>
+  </div>
+
+  <!-- month title centered below controls -->
+  <div class="calendar-header">
+    <div class="center-title">{{ getMonthTitle() }}</div>
   </div>
 
   <div class="weekday-row" role="row">
@@ -65,37 +76,60 @@
     </div>
   </div>
 
-  <!-- selected date panel (shown when a single date is selected in Day mode) -->
+  <!-- selected date panel -->
   <div class="date-panel" *ngIf="selectedDate() as sd">
     <h4>{{ sd | date:'fullDate' }}</h4>
-
-    <div class="items">
-      <div class="section">
-        <h5>Transactions ({{ getCountsForDate(sd).tx }})</h5>
-        <div *ngIf="getCountsForDate(sd).txs.length === 0">No transactions.</div>
-        <ul>
-          <li *ngFor="let t of getCountsForDate(sd).txs">
-            <strong>{{ t.type | titlecase }}</strong> — {{ t.categoryName || t.category || t.categoryId }} • ₱{{
-            t.amount }}
-          </li>
-        </ul>
+    
+    <!-- Date summary -->
+    <div class="date-summary" *ngIf="getCountsForDate(sd) as counts">
+      <div class="summary-stats" *ngIf="counts.tx > 0 || counts.goals > 0">
+        <div class="stat" *ngIf="counts.tx > 0">
+          <mat-icon>sync_alt</mat-icon>
+          <span>{{ counts.tx }} Transaction{{ counts.tx > 1 ? 's' : '' }}</span>
+        </div>
+        <div class="stat" *ngIf="counts.goals > 0">
+          <mat-icon>flag</mat-icon>
+          <span>{{ counts.goals }} Goal{{ counts.goals > 1 ? 's' : '' }}</span>
+        </div>
       </div>
-
-      <div class="section">
-        <h5>Goals ({{ getCountsForDate(sd).goals }})</h5>
-        <div *ngIf="getCountsForDate(sd).goalsList.length === 0">No goal deadlines.</div>
-        <ul>
-          <li *ngFor="let g of getCountsForDate(sd).goalsList">
-            <strong>{{ g.title }}</strong> • Target ₱{{ g.targetAmount || '—' }} • Saved ₱{{ g.currentAmount ||
-            g.savedAmount || 0 }}
-          </li>
-        </ul>
+      
+      <!-- Transaction list -->
+      <div class="items-list" *ngIf="counts.txs.length > 0">
+        <h5>Transactions</h5>
+        <div class="item" *ngFor="let tx of counts.txs">
+          <div class="item-type">{{ tx.type | titlecase }}</div>
+          <div class="item-details">
+            <span class="category">{{ tx.categoryName || tx.category || tx.categoryId }}</span>
+            <span class="amount">{{ tx.amount | currency:'PHP' }}</span>
+          </div>
+          <div class="item-note" *ngIf="tx.note || tx.description">{{ tx.note || tx.description }}</div>
+        </div>
+      </div>
+      
+      <!-- Goals list -->
+      <div class="items-list" *ngIf="counts.goalsList.length > 0">
+        <h5>Goals</h5>
+        <div class="item" *ngFor="let goal of counts.goalsList">
+          <div class="item-type">{{ goal.title }}</div>
+          <div class="item-details">
+            <span class="target">Target: {{ goal.targetAmount | currency:'PHP' }}</span>
+            <span class="saved">Saved: {{ (goal.currentAmount || goal.savedAmount || 0) | currency:'PHP' }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="empty-message" *ngIf="counts.tx === 0 && counts.goals === 0">
+        <p>No transactions or goals for this date</p>
       </div>
     </div>
-
+    
     <div class="panel-actions">
-      <button mat-button color="primary" (click)="addTransactionForDate()">+ Add Transaction</button>
-      <button mat-button color="accent" (click)="addGoalForDate()">+ Add Goal</button>
+      <button mat-stroked-button (click)="addTransactionForDate()">
+        <mat-icon>add</mat-icon> Add Transaction
+      </button>
+      <button mat-stroked-button (click)="addGoalForDate()">
+        <mat-icon>flag</mat-icon> Add Goal
+      </button>
     </div>
   </div>
 </div>

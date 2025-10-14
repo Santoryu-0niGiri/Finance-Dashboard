@@ -2,7 +2,7 @@
 import { Component, computed, effect, signal, AfterViewInit, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { OverviewStoreService } from '../overview/overview-store.service'; // adjust path if needed
+import { OverviewStoreService } from '../../shared/services/overview-store.service';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
@@ -12,7 +12,8 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
 import { SummaryDialogComponent } from '../summary-dialog/summary-dialog.component'; // adjust path if needed
 
-type SelectionMode = 'day' | 'month' | 'year';
+import { SelectionMode } from '../../shared/enums';
+import { DateUtils } from '../../shared/utils';
 
 @Component({
   selector: 'app-calendar-dashboard',
@@ -51,6 +52,9 @@ export class CalendarDashboardComponent implements AfterViewInit {
 
   // today's iso (system/laptop date snapshot)
   todayIso = signal<string>(this._isoFromDateLocal(new Date()));
+  
+  // refresh loading state
+  isRefreshing = signal<boolean>(false);
 
   private dp = new DatePipe('en-US');
 
@@ -58,15 +62,10 @@ export class CalendarDashboardComponent implements AfterViewInit {
   transactions = computed((): any[] => (this.store.rawTransactions() as any[]) || []);
   goals = computed((): any[] => (this.store.rawGoals() as any[]) || []);
 
-  // helpers for local ISO
-  private pad(n: number) { return n < 10 ? `0${n}` : `${n}`; }
   public isoFromLocalParts = (year: number, monthZeroBased: number, day: number) =>
-    `${year}-${this.pad(monthZeroBased + 1)}-${this.pad(day)}`;
-  public isoFromDateLocal = (d: Date) => this._isoFromDateLocal(d);
-
-  private _isoFromDateLocal(d: Date) {
-    return `${d.getFullYear()}-${this.pad(d.getMonth() + 1)}-${this.pad(d.getDate())}`;
-  }
+    `${year}-${DateUtils.pad(monthZeroBased + 1)}-${DateUtils.pad(day)}`;
+  public isoFromDateLocal = (d: Date) => DateUtils.isoFromDateLocal(d);
+  private _isoFromDateLocal(d: Date) { return DateUtils.isoFromDateLocal(d); }
 
   // days grid (numbers | null)
   daysInMonth = computed(() => {
@@ -127,9 +126,15 @@ export class CalendarDashboardComponent implements AfterViewInit {
 
   // ---- Today sync & jump ----
   refreshToday(alsoGoToToday = false) {
-    const now = new Date();
-    this.todayIso.set(this._isoFromDateLocal(now));
-    if (alsoGoToToday) this.goToToday();
+    this.isRefreshing.set(true);
+    
+    // Simulate refresh delay for better UX
+    setTimeout(() => {
+      const now = new Date();
+      this.todayIso.set(this._isoFromDateLocal(now));
+      if (alsoGoToToday) this.goToToday();
+      this.isRefreshing.set(false);
+    }, 800);
   }
 
   goToToday() {
@@ -288,18 +293,9 @@ export class CalendarDashboardComponent implements AfterViewInit {
     const selectedYear = this.selectedYear();
     const year = this.viewYear(), month = this.viewMonth();
 
-    const isoToDate = (iso: string) => {
-      const [y, m, d] = iso.split('-').map(s => parseInt(s, 10));
-      return new Date(y, m - 1, d);
-    };
+    const isoToDate = (iso: string) => DateUtils.isoToDate(iso);
 
-    const getWeekKeyLocal = (d: Date) => {
-      const tmp = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-      tmp.setDate(tmp.getDate() + 3 - ((tmp.getDay() + 6) % 7));
-      const week1 = new Date(tmp.getFullYear(), 0, 4);
-      const weekNo = 1 + Math.round(((tmp.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
-      return `${tmp.getFullYear()}-W${this.pad(weekNo)}`;
-    };
+    const getWeekKeyLocal = (d: Date) => DateUtils.getWeekKeyLocal(d);
 
     const collectDatesForScope = (): string[] => {
       if (scope === 'month') {
@@ -354,10 +350,10 @@ export class CalendarDashboardComponent implements AfterViewInit {
   addGoalForDate() {
     const d = this.selectedDate();
     if (!d) return;
-    this.router.navigate(['/dashboard/goals/create'], { queryParams: { date: d, lockDate: true } });
+    this.router.navigate(['/dashboard/goals'], { queryParams: { date: d, lockDate: true } });
   }
 
-  private isoToDate(iso: string) { const [y, m, d] = iso.split('-').map(s => parseInt(s, 10)); return new Date(y, m - 1, d); }
+  private isoToDate(iso: string) { return DateUtils.isoToDate(iso); }
 
   // months / years for template
   months = ['January','February','March','April','May','June','July','August','September','October','November','December'];

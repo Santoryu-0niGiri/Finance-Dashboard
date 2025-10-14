@@ -1,3 +1,4 @@
+// src/app/dashboard/overview/overview.component.ts
 import { Component, computed, effect } from '@angular/core';
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatButtonModule } from '@angular/material/button';
@@ -8,11 +9,10 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
-import { ApiService } from '../../services/api.service';
-import { AuthService } from '../../services/auth.service';
-import { CommonModule, CurrencyPipe } from '@angular/common';
+import { ApiService, AuthService } from '../../core';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { OverviewStoreService } from './overview-store.service';
+import { OverviewStoreService, ThemeService } from '../../shared/services';
 import { OverviewChartsComponent } from './overview-charts/overview-charts.component';
 import { CalendarDashboardComponent } from '../calendar-dashboard/calendar-dashboard.component';
 
@@ -30,7 +30,6 @@ import { CalendarDashboardComponent } from '../calendar-dashboard/calendar-dashb
     MatDialogModule,
     FormsModule,
     OverviewChartsComponent,
-    CurrencyPipe,
     CalendarDashboardComponent,
     CommonModule
   ],
@@ -52,37 +51,27 @@ export class OverviewComponent {
 
   balance = computed(() => this.income() - this.expenses());
 
-  // add these computed properties near the top-level computed declarations in OverviewComponent
-
-// list of goals currently in the store (already filtered by selected range)
-goalsList = computed(() => this.store.goals());
-
-// number of goals in the current filtered list
-goalsCount = computed(() => (this.goalsList() || []).length);
-
-// total target amount across listed goals
-totalGoalsTarget = computed(() =>
-  (this.goalsList() || []).reduce((sum, g) => sum + Number(g.targetAmount || 0), 0)
-);
-
-// total saved/current amount across listed goals
-totalGoalsSaved = computed(() =>
-  (this.goalsList() || []).reduce((sum, g) => sum + Number(g.currentAmount || g.savedAmount || 0), 0)
-);
-
-// overall percentage progress across all goals (guard divide by zero)
-goalsProgressPct = computed(() => {
-  const target = this.totalGoalsTarget();
-  if (!target || target === 0) return 0;
-  return Math.round((this.totalGoalsSaved() / target) * 100);
-});
+  goalsList = computed(() => this.store.goals());
+  goalsCount = computed(() => (this.goalsList() || []).length);
+  totalGoalsTarget = computed(() =>
+    (this.goalsList() || []).reduce((sum, g) => sum + Number(g.targetAmount || 0), 0)
+  );
+  totalGoalsSaved = computed(() =>
+    (this.goalsList() || []).reduce((sum, g) => sum + Number(g.currentAmount || 0), 0)
+  );
+  goalsProgressPct = computed(() => {
+    const target = this.totalGoalsTarget();
+    if (!target || target === 0) return 0;
+    return Math.round((this.totalGoalsSaved() / target) * 100);
+  });
 
   constructor(
     private api: ApiService,
     public auth: AuthService,
     private router: Router,
-    public store: OverviewStoreService, // <-- make public so template can access
-    private dialog: MatDialog
+    public store: OverviewStoreService,
+    private dialog: MatDialog,
+    public theme: ThemeService // kept public so template can toggle
   ) {
     // whenever user changes, fetch raw data and apply current filter
     effect(() => {
@@ -117,7 +106,6 @@ goalsProgressPct = computed(() => {
     });
   }
 
-  // called when the toggle changes
   onFilterChange() {
     this.applyCurrentFilterToTransactions();
     this.applyCurrentFilterToGoals();
@@ -167,27 +155,22 @@ goalsProgressPct = computed(() => {
     this.router.navigate(['/dashboard/goals']);
   }
 
-  // Open modal (dialog) showing the charts component in a larger view
   openChartsModal() {
-    this.dialog.open(OverviewChartsComponent, {
-      width: '92vw',
-      maxWidth: '1200px',
-      height: '80vh'
-    });
+    const isLight = this.theme.isLight();
+  this.dialog.open(OverviewChartsComponent, {
+    width: '92vw',
+    maxWidth: '1200px',
+    height: '80vh',
+    panelClass: isLight ? 'light-theme' : '',        // apply theme class to dialog panel
+    backdropClass: isLight ? 'light-theme-backdrop' : '' // optional: style backdrop if needed
+  });
   }
 
-  /**
-   * Helper: return a friendly category label for a transaction row.
-   * Handles transactions of type 'goals' (use goalName/goalId)
-   * and normal income/expense rows (categoryName/category/categoryId).
-   */
   getCategoryLabel(element: any): string {
     if (!element) return '';
-    // If this transaction is linked to a goal, prefer goalName then goalId
     if (element.type === 'goals') {
       return element.goalName ?? element.goalId ?? '';
     }
-    // For income/expense: check for categoryName (normalized) then category then categoryId
     return element.categoryName ?? element.category ?? element.categoryId ?? '';
   }
 }

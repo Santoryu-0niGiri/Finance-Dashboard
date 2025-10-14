@@ -1,9 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
+import { Goal } from '../../shared/interfaces';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-goals',
@@ -12,22 +14,31 @@ import { Router } from '@angular/router';
   templateUrl: './goals.component.html',
   styleUrls: ['./goals.component.scss']
 })
-export class GoalsComponent {
+export class GoalsComponent implements OnDestroy {
   goalForm: FormGroup;
-  goals: any[] = [];
+  goals: Goal[] = [];
   apiUrl = 'http://localhost:3000/goals';
+  private queryParamsSubscription?: Subscription;
 
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {
     this.goalForm = this.fb.group({
       title: ['', Validators.required],
       targetAmount: [null, [Validators.required, Validators.min(1)]],
       currentAmount: [0, [Validators.required, Validators.min(0)]],
       targetDate: ['', Validators.required]
+    });
+
+    // check for date query parameter and set it
+    this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
+      if (params['date']) {
+        this.goalForm.patchValue({ targetDate: params['date'] });
+      }
     });
 
     this.loadGoals();
@@ -76,6 +87,10 @@ export class GoalsComponent {
   // ✅ Back button
   goBack() {
     this.router.navigate(['/dashboard/overview']);
+  }
+
+  ngOnDestroy() {
+    this.queryParamsSubscription?.unsubscribe();
   }
 
   // helper

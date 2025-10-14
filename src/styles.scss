@@ -1,19 +1,447 @@
+/* src/styles.scss - Angular 19 / Material M3 + runtime CSS-vars mapping */
 
-// Custom Theming for Angular Material
-// For more information: https://material.angular.dev/guide/theming
+/* Angular Material theming import (build-time baseline) */
 @use '@angular/material' as mat;
 
+/* Minimal compile-time Material theme baseline.
+   Valid color keys for the mat.theme config (M3/system) include:
+   - theme-type
+   - primary
+   - tertiary
+   - use-system-variables
+   - system-variables-prefix
+   We will NOT pass a `secondary` key here (that caused your error).
+*/
 html {
-  @include mat.theme((
-    color: (
-      theme-type: light,
-      primary: mat.$azure-palette,
-      tertiary: mat.$blue-palette,
-    ),
-    typography: Roboto,
-    density: 0,
-  ));
-}/* You can add global styles to this file, and also import other style files */
+  @include mat.theme((color: (theme-type: light,
+        primary: mat.$azure-palette,
+        tertiary: mat.$cyan-palette ),
+      // optional: system variables usage if you want Material to emit CSS variables at build time.
+      use-system-variables: false,
+    ));
+}
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+/* ------------------------------
+   Runtime theme using CSS variables
+   ------------------------------ */
+
+:root {
+  /* core palette (dark default) */
+  --bg: #0F1724;
+  --surface: #111827;
+  --surface-variant: #1F2937;
+  --muted: #6B7280;
+  --text: #E6EEF8;
+  --primary: #3B82F6;
+  --primary-dark: #2563EB;
+  --accent: #06B6D4;
+  --warn: #F97316;
+  --success: #10B981;
+  --success-dark: #059669;
+  --error: #EF4444;
+  --warning: #F59E0B;
+  --glass: rgba(255, 255, 255, 0.04);
+  
+  /* outline colors */
+  --outline-variant: rgba(255, 255, 255, 0.1);
+  
+  /* container colors */
+  --primary-container: rgba(59, 130, 246, 0.15);
+  --on-primary-container: #93C5FD;
+  --success-container: rgba(16, 185, 129, 0.15);
+  --on-success-container: #6EE7B7;
+  --error-container: rgba(239, 68, 68, 0.15);
+  --on-error-container: #FCA5A5;
+  --warning-container: rgba(245, 158, 11, 0.15);
+  --on-warning-container: #FCD34D;
+  
+  /* shadow colors */
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --shadow-color-hover: rgba(0, 0, 0, 0.4);
+  --primary-shadow: rgba(59, 130, 246, 0.3);
+  --accent-shadow: rgba(6, 182, 212, 0.3);
+  --primary-focus: rgba(59, 130, 246, 0.2);
+
+  /* Map to Material MDC tokens (used by most MDC components at runtime) */
+  --mdc-theme-primary: var(--primary);
+  --mdc-theme-on-primary: #ffffff;
+  --mdc-theme-secondary: var(--accent);
+  /* fallback mapping for components expecting "secondary" token */
+  --mdc-theme-background: var(--bg);
+  --mdc-theme-surface: var(--surface);
+  --mdc-theme-on-surface: var(--text);
+  --mdc-theme-error: var(--warn);
+
+  --mdc-theme-text-primary-on-background: var(--text);
+  --mdc-theme-text-secondary-on-background: var(--muted);
+
+  /* layout tokens */
+  --radius: 12px;
+  --card-elev: 0 6px 18px rgba(2, 6, 23, 0.45);
+  --mdc-theme-outline: rgba(255, 255, 255, 0.06);
+}
+
+/* Light theme overrides (toggle by adding .light-theme to <html>) */
+.light-theme {
+  --bg: #FFFFFF;
+  --surface: #F9FAFB;
+  --surface-variant: #F3F4F6;
+  --muted: #6B7280;
+  --text: #111827;
+  --primary: #3B82F6;
+  --primary-dark: #2563EB;
+  --accent: #06B6D4;
+  --warn: #F97316;
+  --success: #10B981;
+  --success-dark: #059669;
+  --error: #EF4444;
+  --warning: #F59E0B;
+  --glass: rgba(0, 0, 0, 0.03);
+  
+  /* outline colors */
+  --outline-variant: rgba(0, 0, 0, 0.1);
+  
+  /* container colors */
+  --primary-container: rgba(59, 130, 246, 0.1);
+  --on-primary-container: #1E40AF;
+  --success-container: rgba(16, 185, 129, 0.1);
+  --on-success-container: #047857;
+  --error-container: rgba(239, 68, 68, 0.1);
+  --on-error-container: #B91C1C;
+  --warning-container: rgba(245, 158, 11, 0.1);
+  --on-warning-container: #92400E;
+  
+  /* shadow colors */
+  --shadow-color: rgba(0, 0, 0, 0.05);
+  --shadow-color-hover: rgba(0, 0, 0, 0.1);
+  --primary-shadow: rgba(59, 130, 246, 0.3);
+  --accent-shadow: rgba(6, 182, 212, 0.3);
+  --primary-focus: rgba(59, 130, 246, 0.1);
+
+  --mdc-theme-primary: var(--primary);
+  --mdc-theme-on-primary: #ffffff;
+  --mdc-theme-secondary: var(--accent);
+  --mdc-theme-background: var(--bg);
+  --mdc-theme-surface: var(--surface);
+  --mdc-theme-on-surface: var(--text);
+  --mdc-theme-error: var(--warn);
+
+  --mdc-theme-text-primary-on-background: var(--text);
+  --mdc-theme-text-secondary-on-background: var(--muted);
+  --mdc-theme-outline: rgba(15, 23, 42, 0.06);
+}
+
+/* Smooth transition when toggling themes */
+html,
+body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  transition: background-color 220ms ease, color 220ms ease;
+  font-family: Inter, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Material component overrides that reference CSS vars */
+.mat-toolbar {
+  background-color: var(--surface) !important;
+  color: var(--text) !important;
+  border-bottom: 1px solid var(--mdc-theme-outline);
+}
+
+/* Force body and app-root background */
+body,
+app-root {
+  background-color: var(--bg) !important;
+  color: var(--text) !important;
+}
+
+/* Force Material dialog backgrounds */
+.mat-mdc-dialog-container,
+.mat-dialog-container {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+}
+
+/* Force Material card backgrounds */
+.mat-card,
+.mat-mdc-card {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+}
+
+/* Force form field backgrounds */
+.mat-mdc-form-field {
+  .mat-mdc-text-field-wrapper {
+    background-color: var(--surface-variant) !important;
+  }
+  
+  .mat-mdc-form-field-input-control {
+    color: var(--text) !important;
+  }
+}
+
+/* Force input backgrounds */
+input,
+textarea,
+select {
+  background-color: var(--surface-variant) !important;
+  color: var(--text) !important;
+  border-color: var(--outline-variant) !important;
+}
+
+mat-card,
+.mat-mdc-card,
+.card {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--card-elev) !important;
+  border: 1px solid var(--outline-variant) !important;
+}
+
+.mat-raised-button.mat-primary,
+.mat-flat-button.mat-primary {
+  background-color: var(--mdc-theme-primary) !important;
+  color: var(--mdc-theme-on-primary) !important;
+}
+
+.mat-form-field-appearance-outline .mat-form-field-outline {
+  stroke: var(--mdc-theme-outline);
+}
+
+.mat-progress-bar .mat-progress-bar-fill::after {
+  background-color: var(--mdc-theme-primary) !important;
+}
+
+/* Additional helpful overrides (optional) */
+.mat-mdc-select-panel {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.mat-mdc-menu {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.mat-mdc-chip {
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text);
+}
+
+.full-width {
+  width: 100%;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+
+button[mat-button],
+button[mat-stroked-button],
+button[mat-flat-button],
+button[mat-raised-button],
+button[mat-icon-button],
+button.mat-button,
+button.mat-stroked-button,
+.mat-button,
+.mat-stroked-button,
+.mat-flat-button,
+.mat-raised-button,
+.mat-icon-button,
+.mat-mdc-button,
+/* MDC-based */
+.mat-mdc-button .mdc-button__label,
+.mat-mdc-button .mat-button-wrapper {
+  color: var(--text) !important;
+}
+
+/* Button toggles (labels) */
+.mat-button-toggle,
+.mat-button-toggle-button,
+.mat-mdc-button-toggle {
+  color: var(--text) !important;
+}
+
+/* Small helper for buttons inside toolbars/cards where contrast may be different */
+.mat-toolbar button[mat-button],
+.mat-toolbar .mat-mdc-button {
+  color: var(--text) !important;
+}
+
+/* Mat icon color (so icons also switch) */
+.mat-icon,
+button.mat-icon-button .mat-icon,
+.mat-mdc-icon-button .mat-icon {
+  color: var(--text) !important;
+}
+
+/* If you use mat-button-toggle-group labels */
+.mat-button-toggle .mat-button-toggle-label-content {
+  color: var(--text) !important;
+}
+
+/* Make sure text in stroked/flat buttons also visible */
+button[mat-stroked-button],
+button[mat-flat-button] {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  background-color: transparent !important;
+}
+
+/* Tweak: muted helper */
+.mat-button,
+.mat-button-toggle,
+button[mat-button] small,
+.muted {
+  color: var(--muted) !important;
+}
+
+/* Smooth transitions so switching theme isn't jarring */
+button,
+.mat-button,
+.mat-icon,
+.mat-button-toggle {
+  transition: color 160ms ease, background-color 160ms ease;
+}
+.mat-mdc-table {
+  color: var(--text) !important;
+}
+
+.mat-mdc-header-cell,
+.mdc-data-table__header-cell {
+  color: var(--text) !important;
+  font-weight: 600;
+}
+
+.mat-mdc-cell {
+  color: var(--text) !important;
+}
+.mat-button-toggle-group {
+  .mat-button-toggle-checked {
+    background-color: var(--primary) !important;
+    /* your primary color */
+    color: #fff !important;
+    /* text always visible */
+    font-weight: 600;
+  }
+
+  .mat-button-toggle {
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  /* Hover effect */
+  .mat-button-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+}
+
+/* If in dark mode, make sure non-selected buttons still have visible text */
+.dark-theme .mat-button-toggle {
+  color: var(--text) !important;
+}
+
+/* ====== FORCE MAT-BUTTON-TOGGLE TO FOLLOW THEME (DROP-IN, put at END of styles.scss) ====== */
+
+/* Broad selectors for both legacy and MDC builds */
+.mat-button-toggle,
+.mat-button-toggle .mat-button-toggle-label-content,
+.mat-button-toggle-button,
+.mat-mdc-button-toggle,
+.mat-mdc-button-toggle .mat-button-toggle-label-content,
+.mat-mdc-button-toggle .mdc-button__label {
+  color: var(--text) !important;
+}
+
+/* Unchecked: slightly muted */
+.mat-button-toggle:not(.mat-button-toggle-checked),
+.mat-mdc-button-toggle:not(.mat-button-toggle-checked) {
+  color: var(--muted) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Checked / selected state: strong primary background + white label */
+.mat-button-toggle.mat-button-toggle-checked,
+.mat-button-toggle.mat-button-toggle-checked .mat-button-toggle-label-content,
+.mat-mdc-button-toggle.mat-button-toggle-checked,
+.mat-mdc-button-toggle.mat-button-toggle-checked .mdc-button__label,
+.mat-mdc-button-toggle.mat-button-toggle-checked .mat-button-toggle-label-content {
+  background-color: var(--mdc-theme-primary, var(--primary)) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+}
+
+/* Some Material versions render an inner button element — force that too */
+.mat-button-toggle.mat-button-toggle-checked button,
+.mat-mdc-button-toggle.mat-button-toggle-checked button,
+.mat-button-toggle.mat-button-toggle-checked .mat-button-toggle-button,
+.mat-mdc-button-toggle.mat-button-toggle-checked .mat-button-toggle-button {
+  background-color: var(--mdc-theme-primary, var(--primary)) !important;
+  color: #fff !important;
+}
+
+/* Force icons inside toggles to match text color */
+.mat-button-toggle .mat-icon,
+.mat-mdc-button-toggle .mat-icon {
+  color: currentColor !important;
+}
+
+/* Hover states */
+.mat-button-toggle:hover,
+.mat-mdc-button-toggle:hover {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Disabled look */
+.mat-button-toggle.mat-button-toggle-disabled,
+.mat-mdc-button-toggle.mat-button-toggle-disabled {
+  color: rgba(255, 255, 255, 0.28) !important;
+  background: transparent !important;
+}
+
+/* If your app uses component-scoped styles, ensure global override with high-specificity fallback */
+body .mat-button-toggle,
+html .mat-button-toggle,
+:root .mat-button-toggle {
+  color: var(--text) !important;
+}
+
+/* Smooth transitions */
+.mat-button-toggle,
+.mat-mdc-button-toggle,
+.mat-button-toggle .mat-button-toggle-label-content {
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+/* Fix mat-select value text color in dark mode */
+.mat-mdc-select-value-text {
+  color: var(--text) !important;
+}
+
+/* Also fix the placeholder text */
+.mat-mdc-select-placeholder {
+  color: var(--muted) !important;
+}
+
+/* Fix arrow icon color */
+.mat-mdc-select-arrow {
+  color: var(--text) !important;
+}
+
+/* Fix table headers and chart content */
+mat-card-title,
+.mat-mdc-card-title {
+  color: var(--text) !important;
+}
+
+mat-card-content,
+.mat-mdc-card-content {
+  color: var(--text) !important;
+}

@@ -3,65 +3,195 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  background: transparent;
 }
 
-.full-width {
-  width: 100%;
+/* layout: main + sidebar */
+.overview-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 20px;
+  align-items: start;
 }
 
-.spacer {
-  flex: 1 1 auto;
+/* main column */
+.main-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.mt-3 {
-  margin-top: 16px;
+/* cards use mat-card defaults; extra small tweak */
+mat-card {
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), var(--surface));
+  color: var(--text);
+  padding: 12px;
 }
 
+/* filters */
+.filters-card .mat-button-toggle-group {
+  margin-bottom: 8px;
+}
+
+/* user info & toolbar styles */
 .user-info {
   display: flex;
   align-items: center;
   margin-right: 1rem;
   font-weight: 500;
-  font-size: medium;
+  font-size: 0.95rem;
 
   mat-icon {
-    margin-right: 0.3rem;
+    margin-right: 0.4rem;
+    color: var(--muted);
   }
 }
 
-.goal-item {
-  margin-bottom: 12px;
+/* goals list compact */
+.goal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.02);
 }
 
+.goal-title {
+  font-weight: 600;
+}
+
+.goal-deadline {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.goal-progress .amounts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+/* small helpers */
 .full-charts-btn {
   margin-left: 12px;
 }
 
-.overview-layout {
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  /* main content + sidebar */
-  gap: 20px;
-  align-items: start;
-}
-
-/* main column takes full width on small screens */
+/* responsive */
 @media (max-width: 1000px) {
   .overview-layout {
     grid-template-columns: 1fr;
-    /* stack */
+  }
+
+  .sidebar {
+    order: 2;
+  }
+}
+.goals-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), var(--surface)) !important;
+  color: var(--text) !important;
+  border-radius: 12px;
+  box-shadow: var(--card-elev) !important;
+  border: 1px solid rgba(255, 255, 255, 0.02);
+
+  mat-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text) !important;
+    font-weight: 600;
+  }
+
+  mat-card-content {
+    padding-top: 8px;
+    color: var(--text) !important;
+  }
+
+  /* Mat-elevation: keep shadow but remove white bg that breaks dark mode */
+  &.mat-elevation-z2 {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), var(--surface)) !important;
+    box-shadow: var(--card-elev) !important;
   }
 }
 
-/* small padding tweaks for sidebar */
-.sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+.transactions-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), var(--surface)) !important;
+  color: var(--text) !important;
+  border-radius: 12px;
+  box-shadow: var(--card-elev) !important;
+  border: 1px solid rgba(255, 255, 255, 0.02);
 
-/* keep calendar card full width of sidebar */
-.sidebar mat-card {
-  width: 100%;
-  padding: 8px;
+  mat-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text) !important;
+    font-weight: 600;
+  }
+
+  /* make the "View All" text button use primary color */
+  >mat-card-title button[mat-button] {
+    color: var(--mdc-theme-primary, var(--primary)) !important;
+    text-transform: none;
+  }
+
+  /* if you prefer the button to be stroked */
+  >mat-card-title button[mat-stroked-button] {
+    border-color: rgba(255, 255, 255, 0.06) !important;
+    color: var(--mdc-theme-primary, var(--primary)) !important;
+    background: transparent !important;
+  }
+
+  mat-card-content {
+    padding-top: 8px;
+    color: var(--text) !important;
+  }
+
+  /* Table styling inside the card */
+  table.mat-table,
+  .full-width {
+    width: 100%;
+    background: transparent;
+    color: var(--text) !important;
+    border-collapse: collapse;
+  }
+
+  /* Header cells */
+  th.mat-header-cell {
+    color: var(--muted) !important;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    padding: 8px 12px;
+    text-align: left;
+    background: transparent !important;
+  }
+
+  /* Body cells */
+  td.mat-cell {
+    color: var(--text) !important;
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  }
+
+  /* Mat-elevation: keep shadow but remove white bg that breaks dark mode */
+  &.mat-elevation-z2 {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), var(--surface)) !important;
+    box-shadow: var(--card-elev) !important;
+  }
+
+  /* small responsive tweak */
+  @media (max-width: 720px) {
+
+    th.mat-header-cell,
+    td.mat-cell {
+      padding: 8px 6px;
+      font-size: 0.92rem;
+    }
+
+    >mat-card-title button {
+      font-size: 0.9rem;
+    }
+  }
 }
