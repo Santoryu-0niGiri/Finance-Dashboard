@@ -1,6 +1,9 @@
 // src/app/dashboard/overview/overview-charts.component.ts
-import { Component, effect, OnDestroy, OnInit } from '@angular/core';
+import { Component, computed, effect, OnDestroy, OnInit, Optional, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { BaseChartDirective, provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { Chart, ChartData, ChartOptions, registerables } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
@@ -12,7 +15,7 @@ Chart.register(ChartDataLabels);
 @Component({
   selector: 'app-overview-charts',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective],
+  imports: [CommonModule, BaseChartDirective, MatIconModule, MatButtonModule, MatDialogModule],
   providers: [
     provideCharts(withDefaultRegisterables())
   ],
@@ -73,6 +76,24 @@ export class OverviewChartsComponent implements OnInit, OnDestroy {
   };
 
   hasData = false;
+  
+  // Stats for the header cards
+  totalIncome = computed(() => 
+    this.store.transactions()
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + Number(t.amount), 0)
+  );
+  
+  totalExpenses = computed(() => 
+    this.store.transactions()
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + Number(t.amount), 0)
+  );
+  
+  netBalance = computed(() => this.totalIncome() - this.totalExpenses());
+  
+  // Detect if component is used in modal or inline
+  isModal = false;
 
   // fallback palette (used if CSS vars missing)
   private palette = [
@@ -84,7 +105,13 @@ export class OverviewChartsComponent implements OnInit, OnDestroy {
   // theme change listener
   private themeListener = () => this.refreshColors();
 
-  constructor(private store: OverviewStoreService) {
+  constructor(
+    private store: OverviewStoreService,
+    @Optional() @Inject(MatDialogRef) private dialogRef: MatDialogRef<any> | null
+  ) {
+    // Detect if we're in a modal dialog
+    this.isModal = !!this.dialogRef;
+    
     effect(() => {
       const tx = this.store.transactions();
       this.rebuildLineChart(tx);

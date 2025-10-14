@@ -8,11 +8,13 @@ import { Transaction, Category } from '../../shared/interfaces';
 import { TransactionType } from '../../shared/enums';
 import { CategoryUtils } from '../../shared/utils';
 import { catchError, of, switchMap, Subscription } from 'rxjs';
+import { MatIcon } from "@angular/material/icon";
+import { MatIconButton, MatButton } from "@angular/material/button";
 
 @Component({
   selector: 'app-transactions',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, MatIcon, MatIconButton, MatButton],
   templateUrl: './transactions.component.html',
   styleUrls: ['./transactions.component.scss']
 })
@@ -55,9 +57,13 @@ export class TransactionsComponent implements OnDestroy {
         this.availableCategories = [];
 
         if (selectedType === 'goals') {
+          this.transactionForm.get('category')?.disable();
           this.loadGoalsForCurrentUser();
         } else if (selectedType === 'income' || selectedType === 'expense') {
           this.availableCategories = CategoryUtils.getCategoriesForType(selectedType);
+          this.transactionForm.get('category')?.enable();
+        } else {
+          this.transactionForm.get('category')?.disable();
         }
       })
     );
@@ -126,6 +132,13 @@ export class TransactionsComponent implements OnDestroy {
           id: g.id?.toString() ?? String(g.id),
           name: g.title
         }));
+
+        // Enable category control when goals are loaded
+        if (this.availableCategories.length > 0) {
+          this.transactionForm.get('category')?.enable();
+        } else {
+          this.transactionForm.get('category')?.disable();
+        }
       });
   }
 
@@ -250,6 +263,17 @@ export class TransactionsComponent implements OnDestroy {
   }
   goToGoals() {
     this.router.navigate(['/dashboard/goals']);
+  }
+
+  getTotalAmount(): string {
+    if (!this.transactions || this.transactions.length === 0) {
+      return '0.00';
+    }
+    const total = this.transactions.reduce((sum, t) => {
+      const amount = Number(t.amount) || 0;
+      return sum + amount;
+    }, 0);
+    return total.toFixed(2);
   }
 
   ngOnDestroy() {

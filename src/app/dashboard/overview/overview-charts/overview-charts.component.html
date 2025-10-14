@@ -1,33 +1,112 @@
-<div class="charts-wrapper">
-  <div *ngIf="!hasData" class="no-data">
-    <p>No chart data available for the selected range.</p>
+<div [class]="isModal ? 'charts-modal' : 'charts-inline'">
+  <!-- Modal Header (only in modal) -->
+  <div class="modal-header" *ngIf="isModal">
+    <div class="header-content">
+      <mat-icon class="header-icon">analytics</mat-icon>
+      <div class="header-text">
+        <h2>Financial Analytics</h2>
+        <p>Comprehensive view of your financial data</p>
+      </div>
+    </div>
+    <button mat-icon-button mat-dialog-close class="close-btn">
+      <mat-icon>close</mat-icon>
+    </button>
   </div>
 
-  <div *ngIf="hasData" class="charts-container">
-    <div class="chart-row">
-      <div class="chart-box">
-        <h3>Income vs Expenses</h3>
-        <div class="chart-canvas">
-          <canvas baseChart [data]="lineChartData" [options]="lineChartOptions" type="line"></canvas>
+  <!-- Content -->
+  <div [class]="isModal ? 'modal-content' : 'inline-content'">
+    <div *ngIf="!hasData" class="empty-state">
+      <div class="empty-icon">
+        <mat-icon>bar_chart_off</mat-icon>
+      </div>
+      <h3>No Data Available</h3>
+      <p>No chart data available for the selected range.</p>
+      <p class="empty-hint">Try adjusting your filter or add some transactions to see analytics.</p>
+    </div>
+
+    <div *ngIf="hasData" class="charts-grid">
+      <!-- Summary Stats (only in modal) -->
+      <div class="stats-row" *ngIf="isModal">
+        <div class="stat-card income">
+          <div class="stat-icon">
+            <mat-icon>trending_up</mat-icon>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Total Income</div>
+            <div class="stat-value">{{ totalIncome() | currency:'₱' }}</div>
+          </div>
+        </div>
+
+        <div class="stat-card expense">
+          <div class="stat-icon">
+            <mat-icon>trending_down</mat-icon>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Total Expenses</div>
+            <div class="stat-value">{{ totalExpenses() | currency:'₱' }}</div>
+          </div>
+        </div>
+
+        <div class="stat-card balance" [class.positive]="netBalance() >= 0" [class.negative]="netBalance() < 0">
+          <div class="stat-icon">
+            <mat-icon>{{ netBalance() >= 0 ? 'account_balance_wallet' : 'money_off' }}</mat-icon>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Net Balance</div>
+            <div class="stat-value">{{ netBalance() | currency:'₱' }}</div>
+          </div>
         </div>
       </div>
 
-      <div class="chart-box">
-        <h3>Expense & Goals Breakdown (Pie)</h3>
-        <div class="chart-canvas">
-          <canvas baseChart [data]="pieChartData" [options]="pieChartOptions" type="pie"></canvas>
+      <!-- Charts Grid -->
+      <div class="charts-container">
+        <div class="chart-card" [class.primary]="isModal">
+          <div class="chart-header">
+            <div class="chart-title">
+              <mat-icon>show_chart</mat-icon>
+              <span>{{ isModal ? 'Income vs Expenses Trend' : 'Financial Overview' }}</span>
+            </div>
+          </div>
+          <div class="chart-content">
+            <canvas baseChart [data]="lineChartData" [options]="lineChartOptions" type="line"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card" *ngIf="isModal">
+          <div class="chart-header">
+            <div class="chart-title">
+              <mat-icon>pie_chart</mat-icon>
+              <span>Expense Distribution</span>
+            </div>
+          </div>
+          <div class="chart-content">
+            <canvas baseChart [data]="pieChartData" [options]="pieChartOptions" type="pie"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card full-width" *ngIf="isModal">
+          <div class="chart-header">
+            <div class="chart-title">
+              <mat-icon>bar_chart</mat-icon>
+              <span>Category Breakdown</span>
+            </div>
+          </div>
+          <div class="chart-content">
+            <canvas baseChart [data]="barChartData" [options]="barChartOptions" type="bar"></canvas>
+          </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- New bar chart row -->
-    <div class="chart-row mt-3">
-      <div class="chart-box">
-        <h3>Expense & Goals Breakdown (Bar)</h3>
-        <div class="chart-canvas">
-          <canvas baseChart [data]="barChartData" [options]="barChartOptions" type="bar"></canvas>
-        </div>
-      </div>
+  <!-- Modal Footer (only in modal) -->
+  <div class="modal-footer" *ngIf="isModal">
+    <div class="footer-info">
+      <mat-icon>info</mat-icon>
+      <span>Data reflects your current filter selection</span>
+    </div>
+    <div class="footer-actions">
+      <button mat-stroked-button mat-dialog-close>Close</button>
     </div>
   </div>
 </div>

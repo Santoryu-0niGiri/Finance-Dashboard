@@ -34,53 +34,121 @@
     </mat-card>
 
     <mat-card class="summary-card mt-3">
-      <mat-card-title>Summary</mat-card-title>
+      <mat-card-title>Financial Summary</mat-card-title>
       <mat-card-content>
-        <p><strong>Total Income:</strong> {{ income() | currency:'PHP' }}</p>
-        <p><strong>Total Expenses:</strong> {{ expenses() | currency:'PHP' }}</p>
-        <p><strong>Balance:</strong> {{ balance() | currency:'PHP' }}</p>
+        <!-- Summary Stats Cards -->
+        <div class="summary-stats">
+          <div class="stat-card income">
+            <div class="stat-icon">
+              <mat-icon>trending_up</mat-icon>
+            </div>
+            <div class="stat-content">
+              <div class="stat-label">Total Income</div>
+              <div class="stat-value">{{ income() | currency:'PHP' }}</div>
+            </div>
+          </div>
+
+          <div class="stat-card expense">
+            <div class="stat-icon">
+              <mat-icon>trending_down</mat-icon>
+            </div>
+            <div class="stat-content">
+              <div class="stat-label">Total Expenses</div>
+              <div class="stat-value">{{ expenses() | currency:'PHP' }}</div>
+            </div>
+          </div>
+
+          <div class="stat-card balance" [class.positive]="balance() >= 0" [class.negative]="balance() < 0">
+            <div class="stat-icon">
+              <mat-icon>{{ balance() >= 0 ? 'account_balance_wallet' : 'money_off' }}</mat-icon>
+            </div>
+            <div class="stat-content">
+              <div class="stat-label">Net Balance</div>
+              <div class="stat-value">{{ balance() | currency:'PHP' }}</div>
+            </div>
+          </div>
+        </div>
 
         <hr />
 
-        <div class="goals-summary">
-          <p>
-            <strong>Goals ({{ goalsCount() }})</strong>
-            &nbsp;—&nbsp;
-            <small>Total saved:</small> {{ totalGoalsSaved() | currency:'PHP' }}
-            <span class="muted">/</span>
-            <small>Total target:</small> {{ totalGoalsTarget() | currency:'PHP' }}
-            <span *ngIf="totalGoalsTarget() > 0" class="muted">({{ goalsProgressPct() }}%)</span>
-          </p>
+        <!-- Goals Overview -->
+        <div class="goals-overview">
+          <div class="goals-header">
+            <div class="goals-title">
+              <mat-icon>flag</mat-icon>
+              <span>Goals Overview</span>
+              <div class="goals-count">{{ goalsCount() }}</div>
+            </div>
+            <div class="goals-summary-stats">
+              <div class="summary-item">
+                <span class="label">Saved</span>
+                <span class="value saved">{{ totalGoalsSaved() | currency:'PHP' }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Target</span>
+                <span class="value target">{{ totalGoalsTarget() | currency:'PHP' }}</span>
+              </div>
+              <div class="summary-item" *ngIf="totalGoalsTarget() > 0">
+                <span class="label">Progress</span>
+                <span class="value progress">{{ goalsProgressPct() }}%</span>
+              </div>
+            </div>
+          </div>
 
-          <div *ngIf="goalsList().length > 0; else noGoals">
-            <div *ngFor="let g of goalsList() | slice:0:3" class="goal-row">
-              <div class="goal-meta">
-                <div class="goal-title">{{ g.title }}</div>
-                <div class="goal-deadline">Deadline:
-                  <small>{{ g.targetDate ? (g.targetDate | date:'mediumDate') : '—' }}</small>
+          <div *ngIf="goalsList().length > 0; else noGoals" class="goals-list">
+            <div *ngFor="let g of goalsList() | slice:0:3" class="goal-card">
+              <div class="goal-header">
+                <div class="goal-info">
+                  <div class="goal-name">{{ g.title }}</div>
+                  <div class="goal-deadline" *ngIf="g.targetDate">
+                    <mat-icon>schedule</mat-icon>
+                    <span>{{ g.targetDate | date:'mediumDate' }}</span>
+                  </div>
+                </div>
+                <div class="goal-amount">
+                  <span class="current">{{ (g.currentAmount || 0) | currency:'PHP' }}</span>
+                  <span class="separator">/</span>
+                  <span class="target">{{ g.targetAmount | currency:'PHP' }}</span>
                 </div>
               </div>
-
-              <div class="goal-progress">
-                <div class="amounts">
-                  <small>{{ (g.currentAmount || 0) | currency:'PHP' }}</small>
-                  <span class="slash">/</span>
-                  <small>{{ g.targetAmount | currency:'PHP' }}</small>
+              
+              <div class="goal-progress-section">
+                <div class="progress-info">
+                  <span class="progress-label">Progress</span>
+                  <span class="progress-percentage">{{ ((g.currentAmount || 0) / (g.targetAmount || 1) * 100) | number:'1.0-1' }}%</span>
                 </div>
-
-                <mat-progress-bar mode="determinate"
-                  [value]="((g.currentAmount || 0) / (g.targetAmount || 1)) * 100">
-                </mat-progress-bar>
+                <div class="progress-bar-container">
+                  <mat-progress-bar 
+                    mode="determinate"
+                    [value]="((g.currentAmount || 0) / (g.targetAmount || 1)) * 100"
+                    class="modern-progress-bar">
+                  </mat-progress-bar>
+                </div>
               </div>
             </div>
 
-            <div *ngIf="goalsList().length > 3" class="view-all">
-              <a (click)="goToGoals()" class="clickable">View all goals ({{ goalsCount() }})</a>
+            <div *ngIf="goalsList().length > 3" class="view-all-goals">
+              <button mat-stroked-button (click)="goToGoals()" class="view-all-btn">
+                <mat-icon>visibility</mat-icon>
+                <span>View all {{ goalsCount() }} goals</span>
+              </button>
             </div>
           </div>
 
           <ng-template #noGoals>
-            <div>No goals yet.</div>
+            <div class="empty-goals">
+              <div class="empty-icon">
+                <mat-icon>flag_off</mat-icon>
+              </div>
+              <div class="empty-text">
+                <h4>No Goals Yet</h4>
+                <p>Start setting financial goals to track your progress</p>
+                <button mat-raised-button color="primary" (click)="goToGoals()">
+                  <mat-icon>add</mat-icon>
+                  Create Goal
+                </button>
+              </div>
+            </div>
           </ng-template>
         </div>
       </mat-card-content>

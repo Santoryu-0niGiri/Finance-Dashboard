@@ -74,6 +74,332 @@ mat-card {
   font-size: 0.9rem;
 }
 
+/* Summary Stats Cards */
+.summary-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: var(--surface-variant);
+  border: 1px solid var(--outline-variant);
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px var(--shadow-color-hover);
+  }
+  
+  .stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    
+    mat-icon {
+      font-size: 1.5rem;
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+  }
+  
+  .stat-content {
+    flex: 1;
+    
+    .stat-label {
+      font-size: 0.875rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+    
+    .stat-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+  }
+  
+  &.income {
+    .stat-icon {
+      background: var(--success-container);
+      color: var(--on-success-container);
+    }
+  }
+  
+  &.expense {
+    .stat-icon {
+      background: var(--error-container);
+      color: var(--on-error-container);
+    }
+  }
+  
+  &.balance {
+    .stat-icon {
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+    }
+    
+    &.positive .stat-value {
+      color: var(--success);
+    }
+    
+    &.negative .stat-value {
+      color: var(--error);
+    }
+  }
+}
+
+/* Goals Overview */
+.goals-overview {
+  .goals-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+    
+    .goals-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--text);
+      
+      mat-icon {
+        color: var(--primary);
+        font-size: 1.25rem;
+      }
+      
+      .goals-count {
+        background: var(--primary-container);
+        color: var(--on-primary-container);
+        padding: 0.25rem 0.5rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        min-width: 1.5rem;
+        text-align: center;
+      }
+    }
+    
+    .goals-summary-stats {
+      display: flex;
+      gap: 1.5rem;
+      
+      .summary-item {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        
+        .label {
+          font-size: 0.75rem;
+          color: var(--muted);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: 0.25rem;
+        }
+        
+        .value {
+          font-weight: 600;
+          font-size: 0.875rem;
+          
+          &.saved {
+            color: var(--success);
+          }
+          
+          &.target {
+            color: var(--text);
+          }
+          
+          &.progress {
+            color: var(--primary);
+          }
+        }
+      }
+    }
+  }
+  
+  .goals-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .goal-card {
+    background: var(--surface-variant);
+    border: 1px solid var(--outline-variant);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px var(--shadow-color);
+    }
+    
+    .goal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+      
+      .goal-info {
+        flex: 1;
+        
+        .goal-name {
+          font-weight: 600;
+          font-size: 1rem;
+          color: var(--text);
+          margin-bottom: 0.5rem;
+        }
+        
+        .goal-deadline {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+          font-size: 0.75rem;
+          color: var(--muted);
+          
+          mat-icon {
+            font-size: 0.875rem;
+            width: 0.875rem;
+            height: 0.875rem;
+          }
+        }
+      }
+      
+      .goal-amount {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.875rem;
+        
+        .current {
+          color: var(--success);
+          font-weight: 600;
+        }
+        
+        .separator {
+          color: var(--muted);
+        }
+        
+        .target {
+          color: var(--text);
+          font-weight: 500;
+        }
+      }
+    }
+    
+    .goal-progress-section {
+      .progress-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        
+        .progress-label {
+          font-size: 0.75rem;
+          color: var(--muted);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        
+        .progress-percentage {
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: var(--primary);
+        }
+      }
+      
+      .progress-bar-container {
+        .modern-progress-bar {
+          height: 8px;
+          border-radius: 4px;
+          
+          ::ng-deep .mat-mdc-progress-bar-fill::after {
+            background-color: var(--primary) !important;
+          }
+          
+          ::ng-deep .mdc-linear-progress__buffer {
+            background-color: var(--outline-variant) !important;
+          }
+        }
+      }
+    }
+  }
+  
+  .view-all-goals {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+    
+    .view-all-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--primary);
+      border-color: var(--primary);
+      
+      &:hover {
+        background: var(--primary-container);
+        color: var(--on-primary-container);
+      }
+    }
+  }
+  
+  .empty-goals {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 2rem 1rem;
+    
+    .empty-icon {
+      margin-bottom: 1rem;
+      
+      mat-icon {
+        font-size: 3rem;
+        width: 3rem;
+        height: 3rem;
+        color: var(--muted);
+        opacity: 0.5;
+      }
+    }
+    
+    .empty-text {
+      h4 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text);
+      }
+      
+      p {
+        margin: 0 0 1.5rem 0;
+        color: var(--muted);
+        font-size: 0.875rem;
+      }
+      
+      button {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+    }
+  }
+}
+
 /* small helpers */
 .full-charts-btn {
   margin-left: 12px;

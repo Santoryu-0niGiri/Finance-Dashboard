@@ -1,39 +1,153 @@
 <div class="goals-container">
-  <h2>My Goals</h2>
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <button mat-icon-button (click)="goBack()" class="back-btn">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-text">
+        <h1>Financial Goals</h1>
+        <p>Track and achieve your financial objectives</p>
+      </div>
+    </div>
+    <div class="header-stats" *ngIf="goals.length > 0">
+      <div class="stat-item">
+        <span class="stat-value">{{ goals.length }}</span>
+        <span class="stat-label">Goals</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ getTotalSaved() | currency:'PHP' }}</span>
+        <span class="stat-label">Total Saved</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ getOverallProgress() }}%</span>
+        <span class="stat-label">Progress</span>
+      </div>
+    </div>
+  </div>
 
-  <!-- Back to Dashboard -->
-  <button type="button" (click)="goBack()">⬅ Back to Dashboard</button>
+  <!-- Goal Form -->
+  <div class="form-section">
+    <div class="form-header">
+      <mat-icon>{{ isEditMode ? 'edit' : 'add_circle' }}</mat-icon>
+      <h2>{{ isEditMode ? 'Update Goal' : 'Create New Goal' }}</h2>
+      <button *ngIf="isEditMode" mat-icon-button (click)="cancelEdit()" class="cancel-edit">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
 
-  <!-- Add Goal Form -->
-  <form [formGroup]="goalForm" (ngSubmit)="onSubmit()">
-    <label>Goal Title</label>
-    <input type="text" formControlName="title" placeholder="e.g. Emergency Fund" />
+    <form [formGroup]="goalForm" (ngSubmit)="onSubmit()" class="goal-form">
+      <div class="form-row">
+        <div class="form-field full-width">
+          <label>Goal Title</label>
+          <input type="text" formControlName="title" placeholder="e.g. Emergency Fund" />
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-field">
+          <label>Target Amount</label>
+          <input type="number" formControlName="targetAmount" placeholder="₱ target" />
+        </div>
+        <div class="form-field">
+          <label>Current Amount</label>
+          <input type="number" formControlName="currentAmount" placeholder="₱ saved so far" />
+        </div>
+        <div class="form-field">
+          <label>Target Date</label>
+          <input type="date" formControlName="targetDate" />
+        </div>
+      </div>
 
-    <label>Target Amount</label>
-    <input type="number" formControlName="targetAmount" placeholder="₱ target" />
-
-    <label>Current Amount</label>
-    <input type="number" formControlName="currentAmount" placeholder="₱ saved so far" />
-
-    <label>Target Date</label>
-    <input type="date" formControlName="targetDate" />
-
-    <button type="submit" [disabled]="goalForm.invalid">Add Goal</button>
-  </form>
-
-  <hr />
+      <div class="form-actions">
+        <button type="button" mat-stroked-button (click)="cancelEdit()" *ngIf="isEditMode" class="secondary-btn">
+          <mat-icon>close</mat-icon>
+          Cancel Changes
+        </button>
+        <button type="button" mat-stroked-button (click)="resetForm()" *ngIf="!isEditMode" class="secondary-btn">
+          <mat-icon>refresh</mat-icon>
+          Clear Form
+        </button>
+        <button type="submit" mat-raised-button color="primary" [disabled]="goalForm.invalid" class="primary-btn">
+          <mat-icon>{{ isEditMode ? 'save' : 'add_circle' }}</mat-icon>
+          {{ isEditMode ? 'Save Changes' : 'Create Goal' }}
+        </button>
+      </div>
+    </form>
+  </div>
 
   <!-- Goals List -->
-  <h3>My Goals</h3>
-  <ul>
-    <li *ngFor="let g of goals">
-      <strong>{{ g.title }}</strong> — Target: ₱{{ g.targetAmount }},
-      Saved: ₱{{ g.currentAmount }},
-      Deadline: {{ g.targetDate }}
-    </li>
-  </ul>
+  <div class="goals-section">
+    <div class="section-header">
+      <div class="section-title">
+        <mat-icon>flag</mat-icon>
+        <h2>Your Goals</h2>
+      </div>
+      <div class="goals-count" *ngIf="goals.length > 0">
+        {{ goals.length }} goal{{ goals.length > 1 ? 's' : '' }}
+      </div>
+    </div>
 
-  <div *ngIf="goals?.length === 0">
-    No goals yet. Add one above!
+    <div *ngIf="goals.length > 0; else emptyState" class="goals-grid">
+      <div *ngFor="let g of goals; trackBy: trackByGoal" class="goal-card">
+        <div class="goal-header">
+          <div class="goal-info">
+            <h3 class="goal-title">{{ g.title }}</h3>
+            <div class="goal-deadline" *ngIf="g.targetDate">
+              <mat-icon>schedule</mat-icon>
+              <span>{{ g.targetDate | date:'mediumDate' }}</span>
+            </div>
+          </div>
+          <div class="goal-actions">
+            <button mat-icon-button (click)="editGoal(g)" class="edit-btn" matTooltip="Edit Goal">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button (click)="deleteGoal(g.id)" class="delete-btn" matTooltip="Delete Goal">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="goal-amounts">
+          <div class="amount-item current">
+            <span class="amount-label">Saved</span>
+            <span class="amount-value">{{ (g.currentAmount || 0) | currency:'PHP' }}</span>
+          </div>
+          <div class="amount-item target">
+            <span class="amount-label">Target</span>
+            <span class="amount-value">{{ g.targetAmount | currency:'PHP' }}</span>
+          </div>
+        </div>
+
+        <div class="goal-progress">
+          <div class="progress-header">
+            <span class="progress-label">Progress</span>
+            <span class="progress-percentage">{{ getGoalProgress(g) }}%</span>
+          </div>
+          <div class="progress-bar-container">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="getGoalProgress(g)"></div>
+            </div>
+          </div>
+          <div class="progress-remaining" *ngIf="getRemainingAmount(g) > 0">
+            <span>{{ getRemainingAmount(g) | currency:'PHP' }} remaining</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #emptyState>
+      <div class="empty-state">
+        <div class="empty-icon">
+          <mat-icon>flag_off</mat-icon>
+        </div>
+        <h3>No Goals Yet</h3>
+        <p>Start your financial journey by creating your first goal</p>
+        <button mat-raised-button color="primary" (click)="scrollToForm()">
+          <mat-icon>add</mat-icon>
+          Create Your First Goal
+        </button>
+      </div>
+    </ng-template>
   </div>
 </div>

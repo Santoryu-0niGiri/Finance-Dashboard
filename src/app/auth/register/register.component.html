@@ -27,11 +27,19 @@
         </mat-form-field>
 
         <button mat-raised-button color="primary" type="submit" class="full-width" [disabled]="registerForm.invalid">
-          Register
+          <mat-icon>person_add</mat-icon>
+          Create Account
         </button>
       </form>
 
-      <button mat-button color="accent" (click)="onLoginClick()">Already have an account? Login</button>
+      <div class="auth-divider">
+        <span>Already have an account?</span>
+      </div>
+
+      <button mat-stroked-button color="primary" (click)="onLoginClick()" class="full-width">
+        <mat-icon>login</mat-icon>
+        Sign In Instead
+      </button>
     </mat-card-content>
   </mat-card>
 </div>
