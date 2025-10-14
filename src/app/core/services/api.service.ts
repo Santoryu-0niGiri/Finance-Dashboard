@@ -1,44 +1,51 @@
-import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
 import { Transaction, Goal } from '../../shared/interfaces';
+import { FirebaseService } from './firebase.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000';
+  private firebase = inject(FirebaseService);
 
-  getTransactions(userId: number): Observable<Transaction[]> {
-    return this.http.get<Transaction[]>(`${this.apiUrl}/transactions?userId=${userId}&_sort=date&_order=desc`);
+  getTransactions(userId: string | number): Observable<Transaction[]> {
+    return this.firebase.getTransactions(String(userId));
   }
 
   addTransaction(transaction: Partial<Transaction>): Observable<Transaction> {
-    return this.http.post<Transaction>(`${this.apiUrl}/transactions`, transaction);
+    return this.firebase.addTransaction(transaction).pipe(
+      map(id => ({ ...transaction, id } as Transaction))
+    );
   }
 
-  updateTransaction(id: number, transaction: Partial<Transaction>): Observable<Transaction> {
-    return this.http.put<Transaction>(`${this.apiUrl}/transactions/${id}`, transaction);
+  updateTransaction(id: string | number, transaction: Partial<Transaction>): Observable<Transaction> {
+    return this.firebase.updateTransaction(String(id), transaction).pipe(
+      map(() => ({ ...transaction, id: String(id) } as Transaction))
+    );
   }
 
-  deleteTransaction(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/transactions/${id}`);
+  deleteTransaction(id: string | number): Observable<void> {
+    return this.firebase.deleteTransaction(String(id));
   }
 
-  getGoals(userId: number): Observable<Goal[]> {
-    return this.http.get<Goal[]>(`${this.apiUrl}/goals?userId=${userId}&_sort=targetDate&_order=desc`);
+  getGoals(userId: string | number): Observable<Goal[]> {
+    return this.firebase.getGoals(String(userId));
   }
 
   addGoal(goal: Partial<Goal>): Observable<Goal> {
-    return this.http.post<Goal>(`${this.apiUrl}/goals`, goal);
+    return this.firebase.addGoal(goal).pipe(
+      map(id => ({ ...goal, id } as Goal))
+    );
   }
 
-  updateGoal(id: number, goal: Partial<Goal>): Observable<Goal> {
-    return this.http.put<Goal>(`${this.apiUrl}/goals/${id}`, goal);
+  updateGoal(id: string | number, goal: Partial<Goal>): Observable<Goal> {
+    return this.firebase.updateGoal(String(id), goal).pipe(
+      map(() => ({ ...goal, id: String(id) } as Goal))
+    );
   }
 
-  deleteGoal(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/goals/${id}`);
+  deleteGoal(id: string | number): Observable<void> {
+    return this.firebase.deleteGoal(String(id));
   }
 }
