@@ -1,11 +1,10 @@
 import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { AuthService } from '../../core/services/auth.service';
+import { AuthService, ApiService } from '../../core/services';
 import { Goal } from '../../shared/interfaces';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -20,7 +19,6 @@ import { Subscription } from 'rxjs';
 export class GoalsComponent implements OnDestroy {
   goalForm: FormGroup;
   goals: Goal[] = [];
-  apiUrl = 'http://localhost:3000/goals';
   private queryParamsSubscription?: Subscription;
   
   // Edit mode properties
@@ -29,7 +27,7 @@ export class GoalsComponent implements OnDestroy {
 
   constructor(
     private fb: FormBuilder,
-    private http: HttpClient,
+    private api: ApiService,
     private auth: AuthService,
     private router: Router,
     private route: ActivatedRoute
@@ -60,7 +58,7 @@ export class GoalsComponent implements OnDestroy {
       return;
     }
 
-    this.http.get<any[]>(`${this.apiUrl}?userId=${user.id}`).subscribe({
+    this.api.getGoals(user.id).subscribe({
       next: (data) => (this.goals = data),
       error: () => alert('⚠️ Error loading goals')
     });
@@ -91,7 +89,7 @@ export class GoalsComponent implements OnDestroy {
     const user = this.getCurrentUser();
     const payload = { ...this.goalForm.value, userId: user!.id };
 
-    this.http.post<any>(this.apiUrl, payload).subscribe({
+    this.api.addGoal(payload).subscribe({
       next: (res) => {
         this.goals = [...this.goals, res];
         this.resetForm();
@@ -105,7 +103,7 @@ export class GoalsComponent implements OnDestroy {
   private updateGoal() {
     const payload = { ...this.goalForm.value };
 
-    this.http.put<any>(`${this.apiUrl}/${this.editingGoalId}`, payload).subscribe({
+    this.api.updateGoal(this.editingGoalId, payload).subscribe({
       next: (res) => {
         const index = this.goals.findIndex(g => g.id === this.editingGoalId);
         if (index !== -1) {
@@ -176,7 +174,7 @@ export class GoalsComponent implements OnDestroy {
   deleteGoal(goalId: any): void {
     if (!confirm('Are you sure you want to delete this goal?')) return;
 
-    this.http.delete(`${this.apiUrl}/${goalId}`).subscribe({
+    this.api.deleteGoal(goalId).subscribe({
       next: () => {
         this.goals = this.goals.filter(g => g.id !== goalId);
         alert('✅ Goal deleted successfully!');

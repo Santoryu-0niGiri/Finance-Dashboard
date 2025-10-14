@@ -1,7 +1,8 @@
 export interface Goal {
-  id?: number;
-  userId: number;
+  id?: string | number;
+  userId: string | number;
   title: string;
+  name: string;
   targetAmount: number;
   currentAmount: number;
   targetDate: string;

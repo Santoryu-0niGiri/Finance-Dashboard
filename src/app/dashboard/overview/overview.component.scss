@@ -405,6 +405,16 @@ mat-card {
   margin-left: 12px;
 }
 
+/* Fix Material button touch target and background issues */
+.mat-mdc-raised-button {
+  background: var(--primary) !important;
+  color: var(--on-primary) !important;
+  
+  .mat-mdc-button-touch-target {
+    background: transparent !important;
+  }
+}
+
 /* responsive */
 @media (max-width: 1000px) {
   .overview-layout {
@@ -428,6 +438,13 @@ mat-card {
     gap: 8px;
     color: var(--text) !important;
     font-weight: 600;
+
+    /* Fix View All button color */
+    button[mat-button] {
+      color: var(--primary) !important;
+      background: transparent !important;
+      text-transform: none;
+    }
   }
 
   mat-card-content {
@@ -459,7 +476,8 @@ mat-card {
 
   /* make the "View All" text button use primary color */
   >mat-card-title button[mat-button] {
-    color: var(--mdc-theme-primary, var(--primary)) !important;
+    color: var(--primary) !important;
+    background: transparent !important;
     text-transform: none;
   }
 

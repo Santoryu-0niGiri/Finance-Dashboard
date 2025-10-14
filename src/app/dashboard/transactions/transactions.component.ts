@@ -1,9 +1,8 @@
 import { Component, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../core/services/auth.service';
+import { AuthService, ApiService } from '../../core/services';
 import { Transaction, Category } from '../../shared/interfaces';
 import { TransactionType } from '../../shared/enums';
 import { CategoryUtils } from '../../shared/utils';
@@ -21,10 +20,6 @@ import { MatIconButton, MatButton } from "@angular/material/button";
 export class TransactionsComponent implements OnDestroy {
   transactionForm: FormGroup;
   transactions: any[] = [];
-  apiUrl = 'http://localhost:3000/transactions';
-  goalsUrl = 'http://localhost:3000/goals';
-
-
 
   // categories to show in the template (id/name)
   availableCategories: { id: string; name: string }[] = [];
@@ -37,7 +32,7 @@ export class TransactionsComponent implements OnDestroy {
 
   constructor(
     private fb: FormBuilder,
-    private http: HttpClient,
+    private api: ApiService,
     private auth: AuthService,
     private router: Router,
     private route: ActivatedRoute
@@ -89,7 +84,7 @@ export class TransactionsComponent implements OnDestroy {
       return;
     }
 
-    this.http.get<any[]>(`${this.apiUrl}?userId=${user.id}&_sort=date&_order=desc`)
+    this.api.getTransactions(user.id)
       .pipe(
         catchError(err => {
           console.error('Error loading transactions', err);
@@ -110,7 +105,7 @@ export class TransactionsComponent implements OnDestroy {
     }
 
     this.loadingGoals = true;
-    this.http.get<any[]>(`${this.goalsUrl}?userId=${user.id}`)
+    this.api.getGoals(user.id)
       .pipe(
         catchError(err => {
           console.error('Error loading goals', err);
@@ -122,14 +117,14 @@ export class TransactionsComponent implements OnDestroy {
       .subscribe(goals => {
         this.loadingGoals = false;
         // normalize: ensure id and title, preserve currentAmount (default 0)
-        this.userGoals = goals.map(g => ({
-          id: g.id,
+        this.userGoals = goals.filter(g => g.id).map(g => ({
+          id: g.id!,
           title: g.title ?? g.name ?? 'Unnamed Goal',
           currentAmount: Number(g.currentAmount) || 0
         }));
 
         this.availableCategories = this.userGoals.map(g => ({
-          id: g.id?.toString() ?? String(g.id),
+          id: String(g.id),
           name: g.title
         }));
 
@@ -176,7 +171,7 @@ export class TransactionsComponent implements OnDestroy {
     }
 
     // Create transaction
-    this.http.post<any>(this.apiUrl, payload)
+    this.api.addTransaction(payload)
       .pipe(
         catchError(err => {
           console.error('Error saving transaction', err);
@@ -202,8 +197,8 @@ export class TransactionsComponent implements OnDestroy {
             const existing = Number(localGoal.currentAmount || 0);
             const newAmount = existing + Number(fv.amount || 0);
 
-            // PATCH the goal on server
-            this.http.patch<any>(`${this.goalsUrl}/${goalId}`, { currentAmount: newAmount })
+            // Update the goal on server
+            this.api.updateGoal(goalId, { currentAmount: newAmount })
               .pipe(
                 catchError(err => {
                   console.error('Error updating goal', err);
@@ -215,40 +210,13 @@ export class TransactionsComponent implements OnDestroy {
                 if (patched) {
                   // update local caches
                   this.userGoals = this.userGoals.map(g =>
-                    g.id?.toString() === goalId?.toString() ? { ...g, currentAmount: Number(patched.currentAmount ?? newAmount) } : g
+                    g.id?.toString() === goalId?.toString() ? { ...g, currentAmount: newAmount } : g
                   );
-                  // reflect changes in availableCategories if you display current amounts in UI later
                 }
               });
           } else {
-            // If local cache missing, fetch goal and patch
-            this.http.get<any>(`${this.goalsUrl}/${goalId}`)
-              .pipe(
-                catchError(err => {
-                  console.error('Error fetching goal', err);
-                  alert('⚠️ Transaction saved but failed to refresh goal progress.');
-                  return of(null);
-                }),
-                switchMap(goalFromServer => {
-                  if (!goalFromServer) return of(null);
-                  const existing = Number(goalFromServer.currentAmount || 0);
-                  const newAmount = existing + Number(fv.amount || 0);
-                  return this.http.patch<any>(`${this.goalsUrl}/${goalId}`, { currentAmount: newAmount })
-                    .pipe(
-                      catchError(err => {
-                        console.error('Error patching goal', err);
-                        alert('⚠️ Transaction saved but failed to update the goal progress.');
-                        return of(null);
-                      })
-                    );
-                })
-              )
-              .subscribe(patched => {
-                if (patched) {
-                  // reload goals so UI is in-sync
-                  this.loadGoalsForCurrentUser();
-                }
-              });
+            // reload goals to get updated data
+            this.loadGoalsForCurrentUser();
           }
         }
 

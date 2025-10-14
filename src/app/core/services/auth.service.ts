@@ -1,20 +1,20 @@
-import { Injectable, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, signal, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { delay, Observable, tap } from 'rxjs';
+import { Observable, delay, tap, map } from 'rxjs';
 import { User } from '../../shared/interfaces';
+import { FirebaseService } from './firebase.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:3000/users';
+  private firebase = inject(FirebaseService);
+  private router = inject(Router);
 
   private currentUser = signal<User | null>(null);
   user = this.currentUser.asReadonly();
 
-  constructor(private http: HttpClient, private router: Router) {
-    // restore user from localStorage if available
+  constructor() {
     const stored = localStorage.getItem('user');
     if (stored) {
       this.currentUser.set(JSON.parse(stored));
@@ -22,20 +22,21 @@ export class AuthService {
   }
 
   register(user: Partial<User>): Observable<User> {
-    return this.http.post<User>(this.apiUrl, user);
+    return this.firebase.addUser(user).pipe(
+      map(id => ({ ...user, id } as User))
+    );
   }
 
   login(email: string, password: string): Observable<User[]> {
-    return this.http
-      .get<User[]>(`${this.apiUrl}?email=${email}&password=${password}`)
-      .pipe(
-        delay(500),
-        tap(users => {
-          if (users.length > 0) {
-            this.saveUser(users[0]);
-          }
-        })
-      );
+    return this.firebase.getUsers().pipe(
+      map(users => users.filter(u => u.email === email && u.password === password)),
+      delay(500),
+      tap(users => {
+        if (users.length > 0) {
+          this.saveUser(users[0]);
+        }
+      })
+    );
   }
 
   saveUser(user: User) {
