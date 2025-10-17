@@ -41,10 +41,10 @@ html {
   --error: #EF4444;
   --warning: #F59E0B;
   --glass: rgba(255, 255, 255, 0.04);
-  
+
   /* outline colors */
   --outline-variant: rgba(255, 255, 255, 0.1);
-  
+
   /* container colors */
   --primary-container: rgba(59, 130, 246, 0.15);
   --on-primary-container: #93C5FD;
@@ -54,7 +54,7 @@ html {
   --on-error-container: #FCA5A5;
   --warning-container: rgba(245, 158, 11, 0.15);
   --on-warning-container: #FCD34D;
-  
+
   /* shadow colors */
   --shadow-color: rgba(0, 0, 0, 0.3);
   --shadow-color-hover: rgba(0, 0, 0, 0.4);
@@ -97,10 +97,10 @@ html {
   --error: #EF4444;
   --warning: #F59E0B;
   --glass: rgba(0, 0, 0, 0.03);
-  
+
   /* outline colors */
   --outline-variant: rgba(0, 0, 0, 0.1);
-  
+
   /* container colors */
   --primary-container: rgba(59, 130, 246, 0.1);
   --on-primary-container: #1E40AF;
@@ -110,7 +110,7 @@ html {
   --on-error-container: #B91C1C;
   --warning-container: rgba(245, 158, 11, 0.1);
   --on-warning-container: #92400E;
-  
+
   /* shadow colors */
   --shadow-color: rgba(0, 0, 0, 0.05);
   --shadow-color-hover: rgba(0, 0, 0, 0.1);
@@ -174,7 +174,7 @@ app-root {
   .mat-mdc-text-field-wrapper {
     background-color: var(--surface-variant) !important;
   }
-  
+
   .mat-mdc-form-field-input-control {
     color: var(--text) !important;
   }
