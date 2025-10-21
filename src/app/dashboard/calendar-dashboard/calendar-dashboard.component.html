@@ -9,13 +9,17 @@
 
       <mat-form-field appearance="outline" class="compact-select">
         <mat-select [value]="viewMonth()" (selectionChange)="setMonth($event.value)" disableRipple>
-          <mat-option *ngFor="let m of months; let i = index" [value]="i">{{ m }}</mat-option>
+          @for (m of months; track m; let i = $index) {
+            <mat-option [value]="i">{{ m }}</mat-option>
+          }
         </mat-select>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="compact-select">
         <mat-select [value]="viewYear()" (selectionChange)="setYear($event.value)" disableRipple>
-          <mat-option *ngFor="let y of getYears(11)" [value]="y">{{ y }}</mat-option>
+          @for (y of getYears(11); track y) {
+            <mat-option [value]="y">{{ y }}</mat-option>
+          }
         </mat-select>
       </mat-form-field>
 
@@ -53,83 +57,109 @@
   </div>
 
   <div class="weekday-row" role="row">
-    <div *ngFor="let w of ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']" class="weekday">{{ w }}</div>
+    @for (w of ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']; track w) {
+      <div class="weekday">{{ w }}</div>
+    }
   </div>
 
   <div class="days-grid" role="grid">
-    <div *ngFor="let d of daysInMonth(); let i = index" class="day-cell" [class.empty]="d === null"
-      [class.selected]="daysIso()[i] === selectedDate()" [class.in-selected-month]="isInSelectedMonth(i)"
-      [class.in-selected-year]="isInSelectedYear(i)" [class.is-today]="isTodayCell(i)" (click)="onSelectDay(d, i)">
-      <div class="day-number" *ngIf="d !== null">{{ d }}</div>
-
-      <ng-container *ngIf="d !== null">
-        <ng-container *ngIf="daysIso()[i] as iso">
-          <ng-container *ngIf="getCountsForDate(iso).tx > 0 || getCountsForDate(iso).goals > 0">
-            <div class="markers">
-              <span class="marker tx" *ngIf="getCountsForDate(iso).tx > 0">{{ getCountsForDate(iso).tx }}</span>
-              <span class="marker goal" *ngIf="getCountsForDate(iso).goals > 0">G{{ getCountsForDate(iso).goals
-                }}</span>
-            </div>
-          </ng-container>
-        </ng-container>
-      </ng-container>
-    </div>
+    @for (d of daysInMonth(); track d; let i = $index) {
+      <div class="day-cell" [class.empty]="d === null"
+        [class.selected]="daysIso()[i] === selectedDate()" [class.in-selected-month]="isInSelectedMonth(i)"
+        [class.in-selected-year]="isInSelectedYear(i)" [class.is-today]="isTodayCell(i)" (click)="onSelectDay(d, i)">
+        @if (d !== null) {
+          <div class="day-number">{{ d }}</div>
+        }
+        @if (d !== null) {
+          @if (daysIso()[i]; as iso) {
+            @if (getCountsForDate(iso).tx > 0 || getCountsForDate(iso).goals > 0) {
+              <div class="markers">
+                @if (getCountsForDate(iso).tx > 0) {
+                  <span class="marker tx">{{ getCountsForDate(iso).tx }}</span>
+                }
+                @if (getCountsForDate(iso).goals > 0) {
+                  <span class="marker goal">G{{ getCountsForDate(iso).goals
+                  }}</span>
+                }
+              </div>
+            }
+          }
+        }
+      </div>
+    }
   </div>
 
   <!-- selected date panel -->
-  <div class="date-panel" *ngIf="selectedDate() as sd">
-    <h4>{{ sd | date:'fullDate' }}</h4>
-    
-    <!-- Date summary -->
-    <div class="date-summary" *ngIf="getCountsForDate(sd) as counts">
-      <div class="summary-stats" *ngIf="counts.tx > 0 || counts.goals > 0">
-        <div class="stat" *ngIf="counts.tx > 0">
-          <mat-icon>sync_alt</mat-icon>
-          <span>{{ counts.tx }} Transaction{{ counts.tx > 1 ? 's' : '' }}</span>
+  @if (selectedDate(); as sd) {
+    <div class="date-panel">
+      <h4>{{ sd | date:'fullDate' }}</h4>
+      <!-- Date summary -->
+      @if (getCountsForDate(sd); as counts) {
+        <div class="date-summary">
+          @if (counts.tx > 0 || counts.goals > 0) {
+            <div class="summary-stats">
+              @if (counts.tx > 0) {
+                <div class="stat">
+                  <mat-icon>sync_alt</mat-icon>
+                  <span>{{ counts.tx }} Transaction{{ counts.tx > 1 ? 's' : '' }}</span>
+                </div>
+              }
+              @if (counts.goals > 0) {
+                <div class="stat">
+                  <mat-icon>flag</mat-icon>
+                  <span>{{ counts.goals }} Goal{{ counts.goals > 1 ? 's' : '' }}</span>
+                </div>
+              }
+            </div>
+          }
+          <!-- Transaction list -->
+          @if (counts.txs.length > 0) {
+            <div class="items-list">
+              <h5>Transactions</h5>
+              @for (tx of counts.txs; track tx) {
+                <div class="item">
+                  <div class="item-type">{{ tx.type | titlecase }}</div>
+                  <div class="item-details">
+                    <span class="category">{{ tx.categoryName || tx.category || tx.categoryId }}</span>
+                    <span class="amount">{{ tx.amount | currency:'PHP' }}</span>
+                  </div>
+                  @if (tx.note || tx.description) {
+                    <div class="item-note">{{ tx.note || tx.description }}</div>
+                  }
+                </div>
+              }
+            </div>
+          }
+          <!-- Goals list -->
+          @if (counts.goalsList.length > 0) {
+            <div class="items-list">
+              <h5>Goals</h5>
+              @for (goal of counts.goalsList; track goal) {
+                <div class="item">
+                  <div class="item-type">{{ goal.title }}</div>
+                  <div class="item-details">
+                    <span class="target">Target: {{ goal.targetAmount | currency:'PHP' }}</span>
+                    <span class="saved">Saved: {{ (goal.currentAmount || goal.savedAmount || 0) | currency:'PHP' }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+          @if (counts.tx === 0 && counts.goals === 0) {
+            <div class="empty-message">
+              <p>No transactions or goals for this date</p>
+            </div>
+          }
         </div>
-        <div class="stat" *ngIf="counts.goals > 0">
-          <mat-icon>flag</mat-icon>
-          <span>{{ counts.goals }} Goal{{ counts.goals > 1 ? 's' : '' }}</span>
-        </div>
-      </div>
-      
-      <!-- Transaction list -->
-      <div class="items-list" *ngIf="counts.txs.length > 0">
-        <h5>Transactions</h5>
-        <div class="item" *ngFor="let tx of counts.txs">
-          <div class="item-type">{{ tx.type | titlecase }}</div>
-          <div class="item-details">
-            <span class="category">{{ tx.categoryName || tx.category || tx.categoryId }}</span>
-            <span class="amount">{{ tx.amount | currency:'PHP' }}</span>
-          </div>
-          <div class="item-note" *ngIf="tx.note || tx.description">{{ tx.note || tx.description }}</div>
-        </div>
-      </div>
-      
-      <!-- Goals list -->
-      <div class="items-list" *ngIf="counts.goalsList.length > 0">
-        <h5>Goals</h5>
-        <div class="item" *ngFor="let goal of counts.goalsList">
-          <div class="item-type">{{ goal.title }}</div>
-          <div class="item-details">
-            <span class="target">Target: {{ goal.targetAmount | currency:'PHP' }}</span>
-            <span class="saved">Saved: {{ (goal.currentAmount || goal.savedAmount || 0) | currency:'PHP' }}</span>
-          </div>
-        </div>
-      </div>
-      
-      <div class="empty-message" *ngIf="counts.tx === 0 && counts.goals === 0">
-        <p>No transactions or goals for this date</p>
+      }
+      <div class="panel-actions">
+        <button mat-stroked-button (click)="addTransactionForDate()">
+          <mat-icon>add</mat-icon> Add Transaction
+        </button>
+        <button mat-stroked-button (click)="addGoalForDate()">
+          <mat-icon>flag</mat-icon> Add Goal
+        </button>
       </div>
     </div>
-    
-    <div class="panel-actions">
-      <button mat-stroked-button (click)="addTransactionForDate()">
-        <mat-icon>add</mat-icon> Add Transaction
-      </button>
-      <button mat-stroked-button (click)="addGoalForDate()">
-        <mat-icon>flag</mat-icon> Add Goal
-      </button>
-    </div>
-  </div>
+  }
 </div>

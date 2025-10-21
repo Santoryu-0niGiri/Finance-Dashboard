@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -13,14 +13,13 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
   selector: 'app-login',
   standalone: true,
   imports: [
-    CommonModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
     MatIconModule,
     ReactiveFormsModule
-  ],
+],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })

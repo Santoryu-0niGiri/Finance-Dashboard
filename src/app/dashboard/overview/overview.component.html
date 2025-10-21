@@ -6,10 +6,12 @@
     <mat-icon>{{ theme.isLight() ? 'light_mode' : 'dark_mode' }}</mat-icon>
   </button>
 
-  <span *ngIf="auth.user()" class="user-info">
-    <mat-icon>account_circle</mat-icon>
-    {{ auth.user()?.name }}
-  </span>
+  @if (auth.user()) {
+    <span class="user-info">
+      <mat-icon>account_circle</mat-icon>
+      {{ auth.user()?.name }}
+    </span>
+  }
 
   <button mat-button (click)="logout()">Logout</button>
 </mat-toolbar>
@@ -22,7 +24,7 @@
       <mat-card-content>
         <mat-button-toggle-group name="filter" [(ngModel)]="selectedFilter" (change)="onFilterChange()">
           <mat-button-toggle value="week">This Week</mat-button-toggle>
-        <mat-button-toggle value="month">This Month</mat-button-toggle>
+          <mat-button-toggle value="month">This Month</mat-button-toggle>
           <mat-button-toggle value="year">This Year</mat-button-toggle>
           <mat-button-toggle value="all">All</mat-button-toggle>
         </mat-button-toggle-group>
@@ -88,54 +90,60 @@
                 <span class="label">Target</span>
                 <span class="value target">{{ totalGoalsTarget() | currency:'PHP' }}</span>
               </div>
-              <div class="summary-item" *ngIf="totalGoalsTarget() > 0">
-                <span class="label">Progress</span>
-                <span class="value progress">{{ goalsProgressPct() }}%</span>
-              </div>
+              @if (totalGoalsTarget() > 0) {
+                <div class="summary-item">
+                  <span class="label">Progress</span>
+                  <span class="value progress">{{ goalsProgressPct() }}%</span>
+                </div>
+              }
             </div>
           </div>
 
-          <div *ngIf="goalsList().length > 0; else noGoals" class="goals-list">
-            <div *ngFor="let g of goalsList() | slice:0:3" class="goal-card">
-              <div class="goal-header">
-                <div class="goal-info">
-                  <div class="goal-name">{{ g.title }}</div>
-                  <div class="goal-deadline" *ngIf="g.targetDate">
-                    <mat-icon>schedule</mat-icon>
-                    <span>{{ g.targetDate | date:'mediumDate' }}</span>
+          @if (goalsList().length > 0) {
+            <div class="goals-list">
+              @for (g of goalsList() | slice:0:3; track g) {
+                <div class="goal-card">
+                  <div class="goal-header">
+                    <div class="goal-info">
+                      <div class="goal-name">{{ g.title }}</div>
+                      @if (g.targetDate) {
+                        <div class="goal-deadline">
+                          <mat-icon>schedule</mat-icon>
+                          <span>{{ g.targetDate | date:'mediumDate' }}</span>
+                        </div>
+                      }
+                    </div>
+                    <div class="goal-amount">
+                      <span class="current">{{ (g.currentAmount || 0) | currency:'PHP' }}</span>
+                      <span class="separator">/</span>
+                      <span class="target">{{ g.targetAmount | currency:'PHP' }}</span>
+                    </div>
+                  </div>
+                  <div class="goal-progress-section">
+                    <div class="progress-info">
+                      <span class="progress-label">Progress</span>
+                      <span class="progress-percentage">{{ ((g.currentAmount || 0) / (g.targetAmount || 1) * 100) | number:'1.0-1' }}%</span>
+                    </div>
+                    <div class="progress-bar-container">
+                      <mat-progress-bar
+                        mode="determinate"
+                        [value]="((g.currentAmount || 0) / (g.targetAmount || 1)) * 100"
+                        class="modern-progress-bar">
+                      </mat-progress-bar>
+                    </div>
                   </div>
                 </div>
-                <div class="goal-amount">
-                  <span class="current">{{ (g.currentAmount || 0) | currency:'PHP' }}</span>
-                  <span class="separator">/</span>
-                  <span class="target">{{ g.targetAmount | currency:'PHP' }}</span>
+              }
+              @if (goalsList().length > 3) {
+                <div class="view-all-goals">
+                  <button mat-stroked-button (click)="goToGoals()" class="view-all-btn">
+                    <mat-icon>visibility</mat-icon>
+                    <span>View all {{ goalsCount() }} goals</span>
+                  </button>
                 </div>
-              </div>
-              
-              <div class="goal-progress-section">
-                <div class="progress-info">
-                  <span class="progress-label">Progress</span>
-                  <span class="progress-percentage">{{ ((g.currentAmount || 0) / (g.targetAmount || 1) * 100) | number:'1.0-1' }}%</span>
-                </div>
-                <div class="progress-bar-container">
-                  <mat-progress-bar 
-                    mode="determinate"
-                    [value]="((g.currentAmount || 0) / (g.targetAmount || 1)) * 100"
-                    class="modern-progress-bar">
-                  </mat-progress-bar>
-                </div>
-              </div>
+              }
             </div>
-
-            <div *ngIf="goalsList().length > 3" class="view-all-goals">
-              <button mat-stroked-button (click)="goToGoals()" class="view-all-btn">
-                <mat-icon>visibility</mat-icon>
-                <span>View all {{ goalsCount() }} goals</span>
-              </button>
-            </div>
-          </div>
-
-          <ng-template #noGoals>
+          } @else {
             <div class="empty-goals">
               <div class="empty-icon">
                 <mat-icon>flag_off</mat-icon>
@@ -149,7 +157,8 @@
                 </button>
               </div>
             </div>
-          </ng-template>
+          }
+
         </div>
       </mat-card-content>
     </mat-card>
@@ -210,24 +219,28 @@
         <button mat-button color="primary" (click)="goToGoals()">View All</button>
       </mat-card-title>
       <mat-card-content>
-        <div *ngFor="let g of store.goals()" class="goal-item">
-          <p><strong>{{ g.title }}</strong> — {{ g.currentAmount | currency:'PHP' }} / {{ g.targetAmount |
+        @for (g of store.goals(); track g) {
+          <div class="goal-item">
+            <p><strong>{{ g.title }}</strong> — {{ g.currentAmount | currency:'PHP' }} / {{ g.targetAmount |
             currency:'PHP'
-            }}</p>
+          }}</p>
           <mat-progress-bar mode="determinate" [value]="(g.currentAmount / g.targetAmount) * 100"></mat-progress-bar>
         </div>
-        <div *ngIf="store.goals().length === 0">No goals yet.</div>
-      </mat-card-content>
-    </mat-card>
-  </div>
+      }
+      @if (store.goals().length === 0) {
+        <div>No goals yet.</div>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>
 
-  <!-- sidebar -->
-  <aside class="sidebar">
-    <mat-card>
-      <mat-card-title>Calendar</mat-card-title>
-      <mat-card-content>
-        <app-calendar-dashboard></app-calendar-dashboard>
-      </mat-card-content>
-    </mat-card>
-  </aside>
+<!-- sidebar -->
+<aside class="sidebar">
+  <mat-card>
+    <mat-card-title>Calendar</mat-card-title>
+    <mat-card-content>
+      <app-calendar-dashboard></app-calendar-dashboard>
+    </mat-card-content>
+  </mat-card>
+</aside>
 </div>

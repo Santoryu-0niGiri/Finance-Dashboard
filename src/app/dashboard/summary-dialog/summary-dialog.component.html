@@ -2,82 +2,90 @@
 
 <mat-dialog-content class="summary-dialog-content">
   <div class="meta-row">
-    <div *ngIf="data.monthTitle" class="month-title">{{ data.monthTitle }}</div>
-    <div *ngIf="!data.monthTitle && data.year" class="year-title">Year: {{ data.year }}</div>
+    @if (data.monthTitle) {
+      <div class="month-title">{{ data.monthTitle }}</div>
+    }
+    @if (!data.monthTitle && data.year) {
+      <div class="year-title">Year: {{ data.year }}</div>
+    }
   </div>
 
-  <div *ngIf="data.details.length > 0; else emptyState">
-    <div class="overview-stats">
-      <div class="stat">
-        <div class="label">Days</div>
-        <div class="value">{{ data.details.length }}</div>
+  @if (data.details.length > 0) {
+    <div>
+      <div class="overview-stats">
+        <div class="stat">
+          <div class="label">Days</div>
+          <div class="value">{{ data.details.length }}</div>
+        </div>
+        <div class="stat">
+          <div class="label">Total Transactions</div>
+          <div class="value">{{ totalTxCount }}</div>
+        </div>
+        <div class="stat">
+          <div class="label">Total Goals</div>
+          <div class="value">{{ totalGoalCount }}</div>
+        </div>
+        <div class="stat">
+          <div class="label">Net (Income − Expense)</div>
+          <div class="value">{{ totalNet | currency:'PHP' }}</div>
+        </div>
       </div>
-
-      <div class="stat">
-        <div class="label">Total Transactions</div>
-        <div class="value">{{ totalTxCount }}</div>
-      </div>
-
-      <div class="stat">
-        <div class="label">Total Goals</div>
-        <div class="value">{{ totalGoalCount }}</div>
-      </div>
-
-      <div class="stat">
-        <div class="label">Net (Income − Expense)</div>
-        <div class="value">{{ totalNet | currency:'PHP' }}</div>
+      <div class="detail-list">
+        @for (d of data.details; track d) {
+          <div class="day-row">
+            <div class="day-header">
+              <div class="date">{{ d.iso | date:'fullDate' }}</div>
+              <div class="counts">
+                <span class="count">Tx: {{ d.txCount }}</span>
+                <span class="count">Goals: {{ d.goalCount }}</span>
+                <span class="count totals">
+                  Income: {{ perDayTotals[d.iso].income | currency:'PHP' }}
+                  • Expense: {{ perDayTotals[d.iso].expense | currency:'PHP' }}
+                </span>
+              </div>
+            </div>
+            <div class="items">
+              @if (d.txs.length > 0) {
+                <div class="txs">
+                  <div class="section-title"><mat-icon>sync_alt</mat-icon> Transactions</div>
+                  <ul>
+                    @for (t of d.txs; track t) {
+                      <li>
+                        <strong>{{ t.type | titlecase }}</strong> —
+                        {{ t.categoryName || t.category || t.categoryId }} •
+                        {{ t.amount | currency:'PHP' }}
+                        <span class="muted"> • {{ t.note || t.description || '' }}</span>
+                      </li>
+                    }
+                  </ul>
+                </div>
+              }
+              @if (d.goals.length > 0) {
+                <div class="goals">
+                  <div class="section-title"><mat-icon>flag</mat-icon> Goals</div>
+                  <ul>
+                    @for (g of d.goals; track g) {
+                      <li>
+                        <strong>{{ g.title }}</strong> —
+                        Target {{ g.targetAmount | currency:'PHP' }}
+                        • Saved {{ (g.currentAmount || g.savedAmount || 0) | currency:'PHP' }}
+                      </li>
+                    }
+                  </ul>
+                </div>
+              }
+            </div>
+            <hr />
+          </div>
+        }
       </div>
     </div>
-
-    <div class="detail-list">
-      <div *ngFor="let d of data.details" class="day-row">
-        <div class="day-header">
-          <div class="date">{{ d.iso | date:'fullDate' }}</div>
-          <div class="counts">
-            <span class="count">Tx: {{ d.txCount }}</span>
-            <span class="count">Goals: {{ d.goalCount }}</span>
-            <span class="count totals">
-              Income: {{ perDayTotals[d.iso].income | currency:'PHP' }}
-              • Expense: {{ perDayTotals[d.iso].expense | currency:'PHP' }}
-            </span>
-          </div>
-        </div>
-
-        <div class="items">
-          <div *ngIf="d.txs.length > 0" class="txs">
-            <div class="section-title"><mat-icon>sync_alt</mat-icon> Transactions</div>
-            <ul>
-              <li *ngFor="let t of d.txs">
-                <strong>{{ t.type | titlecase }}</strong> —
-                {{ t.categoryName || t.category || t.categoryId }} •
-                {{ t.amount | currency:'PHP' }}
-                <span class="muted"> • {{ t.note || t.description || '' }}</span>
-              </li>
-            </ul>
-          </div>
-
-          <div *ngIf="d.goals.length > 0" class="goals">
-            <div class="section-title"><mat-icon>flag</mat-icon> Goals</div>
-            <ul>
-              <li *ngFor="let g of d.goals">
-                <strong>{{ g.title }}</strong> —
-                Target {{ g.targetAmount | currency:'PHP' }}
-                • Saved {{ (g.currentAmount || g.savedAmount || 0) | currency:'PHP' }}
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <hr />
-      </div>
-    </div>
-  </div>
-
-  <ng-template #emptyState>
+  } @else {
     <div class="empty">
       <p>No items for this range.</p>
     </div>
-  </ng-template>
+  }
+
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

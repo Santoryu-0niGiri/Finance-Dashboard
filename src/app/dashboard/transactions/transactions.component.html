@@ -46,23 +46,30 @@
         <div class="form-field">
           <label>Category</label>
           <!-- WHEN type === 'goals' : show goals list -->
-          <ng-container *ngIf="transactionForm.get('type')?.value === 'goals'; else normalCategory">
+          @if (transactionForm.get('type')?.value === 'goals') {
             <select formControlName="category">
               <option value="">-- Select Goal --</option>
-              <option *ngFor="let cat of availableCategories" [value]="cat.id">{{ cat.name }}</option>
+              @for (cat of availableCategories; track cat) {
+                <option [value]="cat.id">{{ cat.name }}</option>
+              }
             </select>
-            <div class="helper" *ngIf="loadingGoals">Loading goals...</div>
-            <div class="helper" *ngIf="!loadingGoals && availableCategories.length === 0">
-              No goals found. <a routerLink="/goals">Create a goal</a>
-            </div>
-          </ng-container>
-          <!-- default (income / expense) -->
-          <ng-template #normalCategory>
+            @if (loadingGoals) {
+              <div class="helper">Loading goals...</div>
+            }
+            @if (!loadingGoals && availableCategories.length === 0) {
+              <div class="helper">
+                No goals found. <a routerLink="/goals">Create a goal</a>
+              </div>
+            }
+          } @else {
             <select formControlName="category">
               <option value="">-- Select Category --</option>
-              <option *ngFor="let cat of availableCategories" [value]="cat.id">{{ cat.name }}</option>
+              @for (cat of availableCategories; track cat) {
+                <option [value]="cat.id">{{ cat.name }}</option>
+              }
             </select>
-          </ng-template>
+          }
+          <!-- default (income / expense) -->
         </div>
       </div>
 
@@ -99,41 +106,46 @@
       </div>
     </div>
 
-    <div class="transactions-grid" *ngIf="transactions.length > 0">
-      <div class="transaction-card" *ngFor="let t of transactions">
-        <div class="transaction-header">
-          <div class="transaction-info">
-            <div class="transaction-type">
-              <span class="type-badge" [ngClass]="t.type">{{ t.type | titlecase }}</span>
+    @if (transactions.length > 0) {
+      <div class="transactions-grid">
+        @for (t of transactions; track t) {
+          <div class="transaction-card">
+            <div class="transaction-header">
+              <div class="transaction-info">
+                <div class="transaction-type">
+                  <span class="type-badge" [ngClass]="t.type">{{ t.type | titlecase }}</span>
+                </div>
+                <div class="transaction-category">
+                  @if (t.type === 'goals') {
+                    {{ t.goalName || t.goalId }}
+                  }
+                  @if (t.type !== 'goals') {
+                    {{ t.categoryName || t.category || t.categoryId }}
+                  }
+                </div>
+              </div>
             </div>
-            <div class="transaction-category">
-              <ng-container *ngIf="t.type === 'goals'">
-                {{ t.goalName || t.goalId }}
-              </ng-container>
-              <ng-container *ngIf="t.type !== 'goals'">
-                {{ t.categoryName || t.category || t.categoryId }}
-              </ng-container>
+            <div class="transaction-details">
+              <div class="amount-item">
+                <span class="amount-label">Amount</span>
+                <span class="amount-value" [ngClass]="{positive: t.type === 'income', negative: t.type === 'expense'}">₱{{ t.amount }}</span>
+              </div>
+              <div class="date-item">
+                <span class="date-label">Date</span>
+                <span class="date-value">{{ t.date }}</span>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div class="transaction-details">
-          <div class="amount-item">
-            <span class="amount-label">Amount</span>
-            <span class="amount-value" [ngClass]="{positive: t.type === 'income', negative: t.type === 'expense'}">₱{{ t.amount }}</span>
-          </div>
-          <div class="date-item">
-            <span class="date-label">Date</span>
-            <span class="date-value">{{ t.date }}</span>
-          </div>
-        </div>
+        }
       </div>
-    </div>
+    }
 
-    <div *ngIf="transactions?.length === 0" class="empty">
-      <div class="empty-icon">💳</div>
-      <div class="empty-title">No transactions yet</div>
-      <div class="empty-subtitle">Add your first transaction to get started</div>
-    </div>
+    @if (transactions?.length === 0) {
+      <div class="empty">
+        <div class="empty-icon">💳</div>
+        <div class="empty-title">No transactions yet</div>
+        <div class="empty-subtitle">Add your first transaction to get started</div>
+      </div>
+    }
   </div>
 </div>

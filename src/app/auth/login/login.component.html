@@ -7,33 +7,38 @@
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Email</mat-label>
           <input matInput type="email" formControlName="email" />
-          <mat-error *ngIf="loginForm.get('email')?.hasError('required')">
-            Email is required
-          </mat-error>
-          <mat-error *ngIf="loginForm.get('email')?.hasError('email')">
-            Enter a valid email
-          </mat-error>
+          @if (loginForm.get('email')?.hasError('required')) {
+            <mat-error>
+              Email is required
+            </mat-error>
+          }
+          @if (loginForm.get('email')?.hasError('email')) {
+            <mat-error>
+              Enter a valid email
+            </mat-error>
+          }
         </mat-form-field>
 
         <!-- Password -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Password</mat-label>
           <input matInput type="password" formControlName="password" />
-          <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
-            Password is required
-          </mat-error>
+          @if (loginForm.get('password')?.hasError('required')) {
+            <mat-error>
+              Password is required
+            </mat-error>
+          }
         </mat-form-field>
 
         <!-- Login button with spinner -->
         <button mat-raised-button color="primary" type="submit" class="full-width"
           [disabled]="loginForm.invalid || loading()">
-          <ng-container *ngIf="!loading(); else spinner">
+          @if (!loading()) {
             <mat-icon>login</mat-icon>
             Sign In
-          </ng-container>
-          <ng-template #spinner>
+          } @else {
             <mat-icon>hourglass_empty</mat-icon> Signing in...
-          </ng-template>
+          }
         </button>
       </form>
 
