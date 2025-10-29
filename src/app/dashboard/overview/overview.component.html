@@ -2,6 +2,10 @@
   <span>Finance Dashboard</span>
   <span class="spacer"></span>
 
+  <button mat-icon-button (click)="refreshData()" aria-label="Refresh data" [disabled]="loading.isLoading()">
+    <mat-icon>refresh</mat-icon>
+  </button>
+
   <button mat-icon-button (click)="theme.toggle()" aria-label="Toggle theme">
     <mat-icon>{{ theme.isLight() ? 'light_mode' : 'dark_mode' }}</mat-icon>
   </button>
@@ -17,6 +21,12 @@
 </mat-toolbar>
 
 <div class="dashboard-container overview-layout">
+  @if (loading.isLoading()) {
+    <div class="spinner-overlay">
+      <mat-spinner diameter="60"></mat-spinner>
+      <p>Refreshing data...</p>
+    </div>
+  }
   <!-- left/main column -->
   <div class="main-column">
     <mat-card class="filters-card mt-3">
@@ -101,7 +111,7 @@
 
           @if (goalsList().length > 0) {
             <div class="goals-list">
-              @for (g of goalsList() | slice:0:3; track g) {
+              @for (g of goalsList() | slice:0:3; track g.id) {
                 <div class="goal-card">
                   <div class="goal-header">
                     <div class="goal-info">
@@ -151,10 +161,7 @@
               <div class="empty-text">
                 <h4>No Goals Yet</h4>
                 <p>Start setting financial goals to track your progress</p>
-                <button mat-raised-button color="primary" (click)="goToGoals()">
-                  <mat-icon>add</mat-icon>
-                  Create Goal
-                </button>
+
               </div>
             </div>
           }
@@ -219,7 +226,7 @@
         <button mat-button color="primary" (click)="goToGoals()">View All</button>
       </mat-card-title>
       <mat-card-content>
-        @for (g of store.goals(); track g) {
+        @for (g of store.goals(); track g.id) {
           <div class="goal-item">
             <p><strong>{{ g.title }}</strong> — {{ g.currentAmount | currency:'PHP' }} / {{ g.targetAmount |
             currency:'PHP'

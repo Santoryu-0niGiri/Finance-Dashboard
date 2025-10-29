@@ -53,10 +53,10 @@
                 <option [value]="cat.id">{{ cat.name }}</option>
               }
             </select>
-            @if (loadingGoals) {
+            @if (loading.isLoading()) {
               <div class="helper">Loading goals...</div>
             }
-            @if (!loadingGoals && availableCategories.length === 0) {
+            @if (!loading.isLoading() && availableCategories.length === 0) {
               <div class="helper">
                 No goals found. <a routerLink="/goals">Create a goal</a>
               </div>
@@ -106,7 +106,7 @@
       </div>
     </div>
 
-    @if (transactions.length > 0) {
+    @if (!loading.isLoading() && transactions.length > 0) {
       <div class="transactions-grid">
         @for (t of transactions; track t) {
           <div class="transaction-card">
@@ -140,7 +140,13 @@
       </div>
     }
 
-    @if (transactions?.length === 0) {
+    @if (loading.isLoading()) {
+      <div class="spinner-container">
+        <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
+      </div>
+    }
+
+    @if (!loading.isLoading() && transactions.length === 0) {
       <div class="empty">
         <div class="empty-icon">💳</div>
         <div class="empty-title">No transactions yet</div>

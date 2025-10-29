@@ -63,22 +63,22 @@ html {
   --primary-focus: rgba(59, 130, 246, 0.2);
 
   /* Map to Material MDC tokens (used by most MDC components at runtime) */
-  --mdc-theme-primary: var(--primary);
-  --mdc-theme-on-primary: #ffffff;
-  --mdc-theme-secondary: var(--accent);
+  --mat-theme-primary: var(--primary);
+  --mat-theme-on-primary: #ffffff;
+  --mat-theme-secondary: var(--accent);
   /* fallback mapping for components expecting "secondary" token */
-  --mdc-theme-background: var(--bg);
-  --mdc-theme-surface: var(--surface);
-  --mdc-theme-on-surface: var(--text);
-  --mdc-theme-error: var(--warn);
+  --mat-theme-background: var(--bg);
+  --mat-theme-surface: var(--surface);
+  --mat-theme-on-surface: var(--text);
+  --mat-theme-error: var(--warn);
 
-  --mdc-theme-text-primary-on-background: var(--text);
-  --mdc-theme-text-secondary-on-background: var(--muted);
+  --mat-theme-text-primary-on-background: var(--text);
+  --mat-theme-text-secondary-on-background: var(--muted);
 
   /* layout tokens */
   --radius: 12px;
   --card-elev: 0 6px 18px rgba(2, 6, 23, 0.45);
-  --mdc-theme-outline: rgba(255, 255, 255, 0.06);
+  --mat-theme-outline: rgba(255, 255, 255, 0.06);
 }
 
 /* Light theme overrides (toggle by adding .light-theme to <html>) */
@@ -118,17 +118,17 @@ html {
   --accent-shadow: rgba(6, 182, 212, 0.3);
   --primary-focus: rgba(59, 130, 246, 0.1);
 
-  --mdc-theme-primary: var(--primary);
-  --mdc-theme-on-primary: #ffffff;
-  --mdc-theme-secondary: var(--accent);
-  --mdc-theme-background: var(--bg);
-  --mdc-theme-surface: var(--surface);
-  --mdc-theme-on-surface: var(--text);
-  --mdc-theme-error: var(--warn);
+  --mat-theme-primary: var(--primary);
+  --mat-theme-on-primary: #ffffff;
+  --mat-theme-secondary: var(--accent);
+  --mat-theme-background: var(--bg);
+  --mat-theme-surface: var(--surface);
+  --mat-theme-on-surface: var(--text);
+  --mat-theme-error: var(--warn);
 
-  --mdc-theme-text-primary-on-background: var(--text);
-  --mdc-theme-text-secondary-on-background: var(--muted);
-  --mdc-theme-outline: rgba(15, 23, 42, 0.06);
+  --mat-theme-text-primary-on-background: var(--text);
+  --mat-theme-text-secondary-on-background: var(--muted);
+  --mat-theme-outline: rgba(15, 23, 42, 0.06);
 }
 
 /* Smooth transition when toggling themes */
@@ -145,7 +145,7 @@ body {
 .mat-toolbar {
   background-color: var(--surface) !important;
   color: var(--text) !important;
-  border-bottom: 1px solid var(--mdc-theme-outline);
+  border-bottom: 1px solid var(--mat-theme-outline);
 }
 
 /* Force body and app-root background */
@@ -160,6 +160,38 @@ app-root {
 .mat-dialog-container {
   background: var(--surface) !important;
   color: var(--text) !important;
+  --mdc-dialog-container-color: var(--surface) !important;
+}
+
+.mat-mdc-dialog-surface,
+.mdc-dialog__surface {
+  background-color: var(--surface) !important;
+}
+
+.mat-mdc-dialog-title,
+.mat-dialog-title {
+  color: var(--text) !important;
+}
+
+.mat-mdc-dialog-content,
+.mat-dialog-content {
+  color: var(--text) !important;
+}
+
+.mat-mdc-dialog-actions,
+.mat-dialog-actions {
+  button[mat-button] {
+    color: var(--primary) !important;
+  }
+  
+  button[mat-raised-button] {
+    background-color: var(--primary) !important;
+    color: #ffffff !important;
+  }
+  
+  .mat-mdc-button-touch-target {
+    background: transparent !important;
+  }
 }
 
 /* Force Material card backgrounds */
@@ -201,16 +233,16 @@ mat-card,
 
 .mat-raised-button.mat-primary,
 .mat-flat-button.mat-primary {
-  background-color: var(--mdc-theme-primary) !important;
-  color: var(--mdc-theme-on-primary) !important;
+  background-color: var(--mat-theme-primary) !important;
+  color: var(--mat-theme-on-primary) !important;
 }
 
 .mat-form-field-appearance-outline .mat-form-field-outline {
-  stroke: var(--mdc-theme-outline);
+  stroke: var(--mat-theme-outline);
 }
 
 .mat-progress-bar .mat-progress-bar-fill::after {
-  background-color: var(--mdc-theme-primary) !important;
+  background-color: var(--mat-theme-primary) !important;
 }
 
 /* Additional helpful overrides (optional) */
@@ -371,7 +403,7 @@ button,
 .mat-mdc-button-toggle.mat-button-toggle-checked,
 .mat-mdc-button-toggle.mat-button-toggle-checked .mdc-button__label,
 .mat-mdc-button-toggle.mat-button-toggle-checked .mat-button-toggle-label-content {
-  background-color: var(--mdc-theme-primary, var(--primary)) !important;
+  background-color: var(--mat-theme-primary, var(--primary)) !important;
   color: #ffffff !important;
   font-weight: 600 !important;
   border-radius: 6px !important;
@@ -383,7 +415,7 @@ button,
 .mat-mdc-button-toggle.mat-button-toggle-checked button,
 .mat-button-toggle.mat-button-toggle-checked .mat-button-toggle-button,
 .mat-mdc-button-toggle.mat-button-toggle-checked .mat-button-toggle-button {
-  background-color: var(--mdc-theme-primary, var(--primary)) !important;
+  background-color: var(--mat-theme-primary, var(--primary)) !important;
   color: #fff !important;
 }
 
@@ -445,3 +477,106 @@ mat-card-content,
 .mat-mdc-card-content {
   color: var(--text) !important;
 }
+
+/* Modern Snackbar Styles */
+.mat-mdc-snack-bar-container {
+  &.snack-success {
+    --mdc-snackbar-container-color: #10B981 !important;
+    --mat-snack-bar-button-color: #ffffff !important;
+    --mdc-snackbar-supporting-text-color: #ffffff !important;
+
+    .mdc-snackbar__surface {
+      background-color: #10B981 !important;
+      border-left: 4px solid #059669;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .mat-mdc-snack-bar-label,
+    .mat-mdc-button {
+      color: #ffffff !important;
+    }
+  }
+
+  &.snack-error {
+    --mdc-snackbar-container-color: #EF4444 !important;
+    --mat-snack-bar-button-color: #ffffff !important;
+    --mdc-snackbar-supporting-text-color: #ffffff !important;
+
+    .mdc-snackbar__surface {
+      background-color: #EF4444 !important;
+      border-left: 4px solid #DC2626;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    }
+
+    .mat-mdc-snack-bar-label,
+    .mat-mdc-button {
+      color: #ffffff !important;
+    }
+  }
+
+  &.snack-info {
+    --mdc-snackbar-container-color: #3B82F6 !important;
+    --mat-snack-bar-button-color: #ffffff !important;
+    --mdc-snackbar-supporting-text-color: #ffffff !important;
+
+    .mdc-snackbar__surface {
+      background-color: #3B82F6 !important;
+      border-left: 4px solid #2563EB;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+    .mat-mdc-snack-bar-label,
+    .mat-mdc-button {
+      color: #ffffff !important;
+    }
+  }
+
+  .mdc-snackbar__surface {
+    border-radius: 8px !important;
+    font-weight: 500;
+  }
+
+  .mat-mdc-button.mat-mdc-snack-bar-action {
+    font-weight: 600;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
+/* Ensure MDC-based primary/raised buttons (and their inner touch targets/labels)
+   follow the app primary color like the Create Goal button. This targets
+   both legacy and MDC class combinations and provides a fallback for
+   the `.mat-mdc-button-touch-target` DOM fragment some browsers show. */
+.mat-mdc-button.mat-primary,
+.mat-mdc-button.mat-raised.mat-primary,
+button.mat-mdc-button.mat-primary,
+button.mat-raised-button.mat-primary {
+  background-color: var(--mat-theme-primary) !important;
+  color: var(--mat-theme-on-primary) !important;
+  box-shadow: none !important;
+}
+
+.mat-mdc-button.mat-primary .mdc-button__label,
+.mat-mdc-button.mat-raised.mat-primary .mdc-button__label,
+button.mat-raised-button.mat-primary .mat-button-wrapper {
+  color: var(--mat-theme-on-primary) !important;
+  font-weight: 600;
+}
+
+/* Some Angular Material builds render an inner touch target element.
+   Style that as well so the visible button area matches the primary color. */
+.mat-mdc-button-touch-target,
+.mat-mdc-button .mdc-button__touch-target,
+.mat-mdc-button .mat-button-wrapper .mdc-button__touch-target {
+  background: transparent !important;
+}
+
+/* If you specifically want the touch-target area to show primary color
+   (rarely desired), uncomment the following rule. Keep transparent by
+   default to preserve ripple and accessibility.
+.mat-mdc-button .mdc-button__touch-target {
+  background-color: var(--mat-theme-primary) !important;
+}
+*/

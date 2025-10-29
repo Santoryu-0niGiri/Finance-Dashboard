@@ -3,23 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-
-type SummaryDetail = {
-  iso: string;
-  txCount: number;
-  goalCount: number;
-  txs: any[];
-  goals: any[];
-};
-
-type SummaryDialogData = {
-  scope: 'week' | 'month' | 'year';
-  year?: number;
-  month?: number;
-  monthTitle?: string;
-  selectedDate?: string | null;
-  details: SummaryDetail[];
-};
+import { SummaryDialogData } from '../../shared/enums/index';
 
 @Component({
   selector: 'app-summary-dialog',

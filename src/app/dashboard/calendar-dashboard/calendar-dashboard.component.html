@@ -63,7 +63,7 @@
   </div>
 
   <div class="days-grid" role="grid">
-    @for (d of daysInMonth(); track d; let i = $index) {
+    @for (d of daysInMonth(); track i; let i = $index) {
       <div class="day-cell" [class.empty]="d === null"
         [class.selected]="daysIso()[i] === selectedDate()" [class.in-selected-month]="isInSelectedMonth(i)"
         [class.in-selected-year]="isInSelectedYear(i)" [class.is-today]="isTodayCell(i)" (click)="onSelectDay(d, i)">

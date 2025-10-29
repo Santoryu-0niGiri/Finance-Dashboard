@@ -1,6 +1,7 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import { ApiService } from '../../core/services/api.service';
+import { SnackbarService } from '../../shared/services/snackbar.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
@@ -8,23 +9,25 @@ import { Transaction, Category } from '../../shared/interfaces';
 import { TransactionType } from '../../shared/enums';
 import { CategoryUtils } from '../../shared/utils';
 import { catchError, of, switchMap, Subscription } from 'rxjs';
+import { Auth } from '@angular/fire/auth';
 import { MatIcon } from "@angular/material/icon";
 import { MatIconButton, MatButton } from "@angular/material/button";
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { LoadingService } from '../../shared/services';
 
 @Component({
   selector: 'app-transactions',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatIcon, MatIconButton, MatButton],
-  templateUrl: './transactions.component.html',
+  imports: [CommonModule, ReactiveFormsModule, MatIcon, MatIconButton, MatButton, MatProgressSpinnerModule],
+  templateUrl:  './transactions.component.html',
   styleUrls: ['./transactions.component.scss']
 })
 export class TransactionsComponent implements OnDestroy {
   transactionForm: FormGroup;
   transactions: any[] = [];
-  apiUrl = 'http://localhost:3000/transactions';
-  goalsUrl = 'http://localhost:3000/goals';
-
-
+  loading = inject(LoadingService);
+  // Using Firestore via ApiService (no json-server)
+  private transactionsSubscription?: Subscription;
 
   // categories to show in the template (id/name)
   availableCategories: { id: string; name: string }[] = [];
@@ -32,15 +35,30 @@ export class TransactionsComponent implements OnDestroy {
   // cache of user goals with currentAmount
   userGoals: { id: string | number; title: string; currentAmount?: number }[] = [];
 
-  loadingGoals = false;
   private subscriptions = new Subscription();
+
+  // tolerant snackbar helper (tries .show() then .open())
+  private showSnackbar(message: string) {
+    try {
+      const s: any = this.snackbar;
+      if (s?.success && message.startsWith('✅')) s.success(message);
+      else if (s?.error && (message.startsWith('⚠️') || /error|failed|invalid/i.test(message))) s.error(message);
+      else if (s?.info) s.info(message);
+      else if (s?.open) s.open(message, 'OK', { duration: 3000 });
+  else /* no snackbar implementation available */;
+    } catch (e) {
+      /* snackbar show failed */
+    }
+  }
 
   constructor(
     private fb: FormBuilder,
-    private http: HttpClient,
+    private api: ApiService,
     private auth: AuthService,
+    private afAuth: Auth,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private snackbar: SnackbarService
   ) {
     this.transactionForm = this.fb.group({
       type: ['', Validators.required],        // 'income' | 'expense' | 'goals'
@@ -77,87 +95,95 @@ export class TransactionsComponent implements OnDestroy {
       })
     );
 
-    // initial load of transactions for the user (if logged in)
-    this.loadTransactions();
+    this.afAuth.onAuthStateChanged((fbUser) => {
+      if (fbUser?.uid) {
+        this.transactionsSubscription?.unsubscribe();
+        this.loading.show();
+        this.transactionsSubscription = this.api.getTransactions(fbUser.uid).pipe(
+          catchError(() => of([]))
+        ).subscribe(data => {
+          this.transactions = data || [];
+          this.loading.hide();
+        }, () => {
+          this.transactions = [];
+          this.loading.hide();
+        });
+      } else {
+        this.transactionsSubscription?.unsubscribe();
+        this.transactions = [];
+        this.availableCategories = [];
+        this.userGoals = [];
+      }
+    });
   }
 
-  // load transactions for current logged-in user
   loadTransactions() {
-    const user = this.getCurrentUser();
-    if (!user) {
-      this.transactions = [];
-      return;
+    const fbUser = this.afAuth.currentUser;
+    if (fbUser?.uid) {
+      this.loading.show();
+      this.api.getTransactions(fbUser.uid).pipe(
+        catchError(() => of([]))
+      ).subscribe(data => {
+        this.transactions = data || [];
+        this.loading.hide();
+      }, () => {
+        this.transactions = [];
+        this.loading.hide();
+      });
     }
-
-    this.http.get<any[]>(`${this.apiUrl}?userId=${user.id}&_sort=date&_order=desc`)
-      .pipe(
-        catchError(err => {
-          console.error('Error loading transactions', err);
-          alert('⚠️ Error loading transactions');
-          return of([]);
-        })
-      )
-      .subscribe(data => this.transactions = data);
   }
 
-  // Loads goals for the current user and maps them to availableCategories
   loadGoalsForCurrentUser() {
-    const user = this.getCurrentUser();
-    if (!user) {
+    const fbUser = this.afAuth.currentUser;
+    if (!fbUser?.uid) {
       this.userGoals = [];
       this.availableCategories = [];
       return;
     }
 
-    this.loadingGoals = true;
-    this.http.get<any[]>(`${this.goalsUrl}?userId=${user.id}`)
-      .pipe(
-        catchError(err => {
-          console.error('Error loading goals', err);
-          alert('⚠️ Unable to load goals. Please try again.');
-          this.loadingGoals = false;
-          return of([]);
-        })
-      )
-      .subscribe(goals => {
-        this.loadingGoals = false;
-        // normalize: ensure id and title, preserve currentAmount (default 0)
-        this.userGoals = goals.map(g => ({
-          id: g.id,
-          title: g.title ?? g.name ?? 'Unnamed Goal',
-          currentAmount: Number(g.currentAmount) || 0
-        }));
+    this.loading.show();
+    this.api.getGoals(fbUser.uid).pipe(
+      catchError(() => {
+        this.showSnackbar('⚠️ Unable to load goals. Please try again.');
+        this.loading.hide();
+        return of([]);
+      })
+    ).subscribe(goals => {
+      this.loading.hide();
+      this.userGoals = goals.map(g => ({
+        id: g.id?.toString() ?? '',
+        title: g.title ?? 'Unnamed Goal',
+        currentAmount: Number((g as any).currentAmount) || 0
+      }));
 
-        this.availableCategories = this.userGoals.map(g => ({
-          id: g.id?.toString() ?? String(g.id),
-          name: g.title
-        }));
+      this.availableCategories = this.userGoals.map(g => ({
+        id: g.id?.toString() ?? String(g.id),
+        name: g.title
+      }));
 
-        // Enable category control when goals are loaded
-        if (this.availableCategories.length > 0) {
-          this.transactionForm.get('category')?.enable();
-        } else {
-          this.transactionForm.get('category')?.disable();
-        }
-      });
+      if (this.availableCategories.length > 0) {
+        this.transactionForm.get('category')?.enable();
+      } else {
+        this.transactionForm.get('category')?.disable();
+      }
+    });
   }
 
-  // submit new transaction
   onSubmit() {
     if (!this.transactionForm.valid) {
-      alert('⚠️ Please fill all fields correctly.');
+      this.showSnackbar('⚠️ Please fill out all required fields correctly.');
       return;
     }
 
-    const user = this.getCurrentUser();
-    if (!user) {
-      alert('⚠️ You must be logged in to add a transaction.');
+    const fbUser = this.afAuth.currentUser;
+    if (!fbUser?.uid) {
+      this.showSnackbar('⚠️ Authentication required. Please log in.');
       return;
     }
 
     const fv = this.transactionForm.value;
     const payload: any = {
-      userId: user.id,
+      userId: fbUser.uid,
       type: fv.type,
       amount: fv.amount,
       date: fv.date || new Date().toISOString().slice(0, 10),
@@ -176,86 +202,46 @@ export class TransactionsComponent implements OnDestroy {
     }
 
     // Create transaction
-    this.http.post<any>(this.apiUrl, payload)
-      .pipe(
-        catchError(err => {
-          console.error('Error saving transaction', err);
-          alert('⚠️ Error saving transaction');
-          return of(null);
-        })
-      )
-      .subscribe(res => {
-        if (!res) return;
+    this.api.addTransaction(payload).pipe(
+      catchError(err => {
+        /* Error saving transaction */
+        this.showSnackbar('⚠️ Failed to create transaction. Please try again.');
+        return of(null);
+      })
+    ).subscribe(res => {
+      if (!res) return;
 
-        // add to UI list
-        this.transactions = [res, ...this.transactions];
-        alert('✅ Transaction added!');
+      // add to UI list
+      this.transactions = [res, ...this.transactions];
+      this.showSnackbar('✅ Transaction created successfully!');
 
-        // If this is a goal transaction, update the goal's currentAmount
-        if (fv.type === 'goals') {
-          const goalId = fv.category;
+      // If this is a goal transaction, update the goal's currentAmount using ApiService
+      if (fv.type === 'goals') {
+        const goalId = fv.category;
+        const localGoal = this.userGoals.find(g => g.id?.toString() === goalId?.toString());
+        const existing = Number(localGoal?.currentAmount || 0);
+        const newAmount = existing + Number(fv.amount || 0);
 
-          // find cached goal
-          const localGoal = this.userGoals.find(g => g.id?.toString() === goalId?.toString());
-
-          if (localGoal) {
-            const existing = Number(localGoal.currentAmount || 0);
-            const newAmount = existing + Number(fv.amount || 0);
-
-            // PATCH the goal on server
-            this.http.patch<any>(`${this.goalsUrl}/${goalId}`, { currentAmount: newAmount })
-              .pipe(
-                catchError(err => {
-                  console.error('Error updating goal', err);
-                  alert('⚠️ Transaction saved but failed to update the goal progress.');
-                  return of(null);
-                })
-              )
-              .subscribe(patched => {
-                if (patched) {
-                  // update local caches
-                  this.userGoals = this.userGoals.map(g =>
-                    g.id?.toString() === goalId?.toString() ? { ...g, currentAmount: Number(patched.currentAmount ?? newAmount) } : g
-                  );
-                  // reflect changes in availableCategories if you display current amounts in UI later
-                }
-              });
-          } else {
-            // If local cache missing, fetch goal and patch
-            this.http.get<any>(`${this.goalsUrl}/${goalId}`)
-              .pipe(
-                catchError(err => {
-                  console.error('Error fetching goal', err);
-                  alert('⚠️ Transaction saved but failed to refresh goal progress.');
-                  return of(null);
-                }),
-                switchMap(goalFromServer => {
-                  if (!goalFromServer) return of(null);
-                  const existing = Number(goalFromServer.currentAmount || 0);
-                  const newAmount = existing + Number(fv.amount || 0);
-                  return this.http.patch<any>(`${this.goalsUrl}/${goalId}`, { currentAmount: newAmount })
-                    .pipe(
-                      catchError(err => {
-                        console.error('Error patching goal', err);
-                        alert('⚠️ Transaction saved but failed to update the goal progress.');
-                        return of(null);
-                      })
-                    );
-                })
-              )
-              .subscribe(patched => {
-                if (patched) {
-                  // reload goals so UI is in-sync
-                  this.loadGoalsForCurrentUser();
-                }
-              });
+        this.api.updateGoal(goalId, { currentAmount: newAmount as any }).pipe(
+          catchError(err => {
+            /* Error updating goal */
+            this.showSnackbar('⚠️ Transaction saved but failed to update goal progress.');
+            return of(null);
+          })
+        ).subscribe(patched => {
+          if (patched) {
+            // update local caches
+            this.userGoals = this.userGoals.map(g =>
+              g.id?.toString() === goalId?.toString() ? { ...g, currentAmount: Number((patched as any).currentAmount ?? newAmount) } : g
+            );
           }
-        }
+        });
+      }
 
-        // reset form and categories
-        this.transactionForm.reset();
-        this.availableCategories = [];
-      });
+      // reset form and categories
+      this.transactionForm.reset();
+      this.availableCategories = [];
+    });
   }
 
   goBack() {
@@ -278,21 +264,10 @@ export class TransactionsComponent implements OnDestroy {
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
+    this.transactionsSubscription?.unsubscribe();
   }
 
-  // helper to read the current user from AuthService (your service uses signals)
   private getCurrentUser(): any | null {
-    try {
-      // prefer auth.getUser() or auth.user() if available
-      const anyAuth: any = this.auth as any;
-      if (typeof anyAuth.getUser === 'function') return anyAuth.getUser();
-      if (typeof anyAuth.user === 'function') return anyAuth.user();
-      // fallback to localStorage
-      const raw = localStorage.getItem('user');
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      const raw = localStorage.getItem('user');
-      return raw ? JSON.parse(raw) : null;
-    }
+    return this.afAuth.currentUser ? { id: this.afAuth.currentUser.uid } : null;
   }
 }

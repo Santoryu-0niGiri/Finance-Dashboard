@@ -16,6 +16,12 @@ export const routes: Routes = [
       import('./auth/register/register.component').then((m) => m.RegisterComponent),
   },
   {
+    path: 'reset-password',
+    pathMatch: 'full',
+    loadComponent: () =>
+      import('./auth/reset-password/reset-password.component').then((m) => m.ResetPasswordComponent),
+  },
+  {
   path: 'dashboard',
   loadChildren: () =>
       import('./dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES),

@@ -1,44 +1,119 @@
-import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { inject, Injectable, Injector, runInInjectionContext } from '@angular/core';
+import { from, map, Observable, catchError, throwError } from 'rxjs';
 import { Transaction, Goal } from '../../shared/interfaces';
+import { addDoc, collection, deleteDoc, doc, orderBy, query, updateDoc, where } from 'firebase/firestore';
+import { collectionData, Firestore } from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000';
+  private firestore = inject(Firestore);
+  private injector = inject(Injector);
 
-  getTransactions(userId: number): Observable<Transaction[]> {
-    return this.http.get<Transaction[]>(`${this.apiUrl}/transactions?userId=${userId}&_sort=date&_order=desc`);
+  private uid(userId: number | string): string {
+    return String(userId);
+  }
+
+  getTransactions(userId: number | string): Observable<Transaction[]> {
+    const uid = this.uid(userId);
+    const q = query(
+      collection(this.firestore, 'transactions'),
+      where('userId', '==', uid),
+      orderBy('userId'),
+      orderBy('date', 'desc')
+    );
+    return runInInjectionContext(this.injector, () =>
+      (collectionData(q, { idField: 'id' }) as Observable<Transaction[]>).pipe(
+        catchError(err => {
+          console.error('Error fetching transactions:', err);
+          return throwError(() => err);
+        })
+      )
+    );
   }
 
   addTransaction(transaction: Partial<Transaction>): Observable<Transaction> {
-    return this.http.post<Transaction>(`${this.apiUrl}/transactions`, transaction);
+    if (transaction.userId != null) transaction.userId = this.uid(transaction.userId);
+    return from(addDoc(collection(this.firestore, 'transactions'), transaction)).pipe(
+      map(ref => ({ ...transaction, id: ref.id } as Transaction)),
+      catchError(err => {
+        console.error('Error adding transaction:', err);
+        return throwError(() => err);
+      })
+    );
   }
 
-  updateTransaction(id: number, transaction: Partial<Transaction>): Observable<Transaction> {
-    return this.http.put<Transaction>(`${this.apiUrl}/transactions/${id}`, transaction);
+  updateTransaction(id: string | number, transaction: Partial<Transaction>): Observable<Transaction> {
+    const docRef = doc(this.firestore, `transactions/${id}`);
+    if (transaction.userId != null) transaction.userId = this.uid(transaction.userId);
+    return from(updateDoc(docRef, transaction)).pipe(
+      map(() => ({ ...transaction, id: String(id) } as Transaction)),
+      catchError(err => {
+        console.error('Error updating transaction:', err);
+        return throwError(() => err);
+      })
+    );
   }
 
-  deleteTransaction(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/transactions/${id}`);
+  deleteTransaction(id: string | number): Observable<void> {
+    const docRef = doc(this.firestore, `transactions/${id}`);
+    return from(deleteDoc(docRef)).pipe(
+      catchError(err => {
+        console.error('Error deleting transaction:', err);
+        return throwError(() => err);
+      })
+    );
   }
 
-  getGoals(userId: number): Observable<Goal[]> {
-    return this.http.get<Goal[]>(`${this.apiUrl}/goals?userId=${userId}&_sort=targetDate&_order=desc`);
+  getGoals(userId: number | string): Observable<Goal[]> {
+    const uid = this.uid(userId);
+    const q = query(
+      collection(this.firestore, 'goals'),
+      where('userId', '==', uid),
+      orderBy('userId'),
+      orderBy('targetDate', 'desc')
+    );
+    return runInInjectionContext(this.injector, () =>
+      (collectionData(q, { idField: 'id' }) as Observable<Goal[]>).pipe(
+        catchError(err => {
+          console.error('Error fetching goals:', err);
+          return throwError(() => err);
+        })
+      )
+    );
   }
 
   addGoal(goal: Partial<Goal>): Observable<Goal> {
-    return this.http.post<Goal>(`${this.apiUrl}/goals`, goal);
+    if (goal.userId != null) goal.userId = this.uid(goal.userId);
+    return from(addDoc(collection(this.firestore, 'goals'), goal)).pipe(
+      map(ref => ({ ...goal, id: ref.id } as Goal)),
+      catchError(err => {
+        console.error('Error adding goal:', err);
+        return throwError(() => err);
+      })
+    );
   }
 
-  updateGoal(id: number, goal: Partial<Goal>): Observable<Goal> {
-    return this.http.put<Goal>(`${this.apiUrl}/goals/${id}`, goal);
+  updateGoal(id: string | number, goal: Partial<Goal>): Observable<Goal> {
+    const docRef = doc(this.firestore, `goals/${id}`);
+    if (goal.userId != null) goal.userId = this.uid(goal.userId);
+    return from(updateDoc(docRef, goal)).pipe(
+      map(() => ({ ...goal, id: String(id) } as Goal)),
+      catchError(err => {
+        console.error('Error updating goal:', err);
+        return throwError(() => err);
+      })
+    );
   }
 
-  deleteGoal(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/goals/${id}`);
+  deleteGoal(id: string | number): Observable<void> {
+    const docRef = doc(this.firestore, `goals/${id}`);
+    return from(deleteDoc(docRef)).pipe(
+      catchError(err => {
+        console.error('Error deleting goal:', err);
+        return throwError(() => err);
+      })
+    );
   }
 }

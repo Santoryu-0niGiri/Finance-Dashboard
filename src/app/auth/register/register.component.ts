@@ -28,6 +28,8 @@ export class RegisterComponent {
   private auth = inject(AuthService);
   private router = inject(Router);
 
+  errorMessage = '';
+
   registerForm = this.fb.group({
     name: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
@@ -44,12 +46,11 @@ export class RegisterComponent {
       };
 
       this.auth.register(user).subscribe({
-        next: (response) => {
-          console.log('Registration successful:', response);
-          this.router.navigate(['/login']);
+        next: () => {
+          this.router.navigate(['/dashboard']);
         },
-        error: (error) => {
-          console.error('Registration failed:', error);
+        error: (err) => {
+          this.errorMessage = err.message;
         }
       });
     }

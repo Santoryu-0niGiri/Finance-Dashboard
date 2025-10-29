@@ -1,6 +1,6 @@
 export interface Goal {
-  id?: number;
-  userId: number;
+  id?: string;
+  userId: string;
   title: string;
   targetAmount: number;
   currentAmount: number;
@@ -8,7 +8,7 @@ export interface Goal {
 }
 
 export interface GoalSummary {
-  id: string | number;
+  id: string;
   title: string;
   currentAmount?: number;
 }

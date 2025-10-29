@@ -1,0 +1,11 @@
+::ng-deep .mat-mdc-dialog-container {
+  --mdc-dialog-container-color: var(--surface-color);
+}
+
+h2 {
+  color: var(--text-primary);
+}
+
+mat-dialog-content {
+  color: var(--text-secondary);
+}

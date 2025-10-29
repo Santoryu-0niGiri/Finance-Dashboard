@@ -1,0 +1,1 @@
+fix the errors for empty dashboard goals and transaction because it fires error because the transaction and goals are empty in the firestore

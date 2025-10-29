@@ -31,15 +31,22 @@
         </mat-form-field>
 
         <!-- Login button with spinner -->
-        <button mat-raised-button color="primary" type="submit" class="full-width"
-          [disabled]="loginForm.invalid || loading()">
-          @if (!loading()) {
-            <mat-icon>login</mat-icon>
-            Sign In
-          } @else {
-            <mat-icon>hourglass_empty</mat-icon> Signing in...
-          }
-        </button>
+      <button mat-raised-button color="primary" type="submit" class="full-width" [disabled]="loginForm.invalid || loading()">
+
+        <!-- Icon branch: single root node per branch -->
+        @if (!loading()) {
+        <mat-icon>login</mat-icon>
+        } @else {
+        <mat-icon>hourglass_empty</mat-icon>
+        }
+
+        <!-- Text branch: single root node per branch -->
+        @if (!loading()) {
+        <span>Sign In</span>
+        } @else {
+        <span>Signing in...</span>
+        }
+      </button>
       </form>
 
       <div class="auth-divider">
@@ -51,5 +58,9 @@
         Create New Account
       </button>
     </mat-card-content>
+
+      <mat-card-content class="auth-divider">
+         <a routerLink="/reset-password" >Forget Password?</a>
+      </mat-card-content>
   </mat-card>
 </div>

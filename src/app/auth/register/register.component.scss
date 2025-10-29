@@ -53,6 +53,10 @@ button[mat-raised-button] {
     color: white !important;
     cursor: not-allowed;
   }
+
+  .mat-mdc-button-touch-target {
+    display: none;
+  }
 }
 
 button[mat-stroked-button] {
@@ -68,6 +72,19 @@ button[mat-stroked-button] {
   mat-icon {
     margin-right: 8px;
   }
+
+  .mat-mdc-button-touch-target {
+    display: none;
+  }
+}
+
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
 }
 
 .auth-divider {

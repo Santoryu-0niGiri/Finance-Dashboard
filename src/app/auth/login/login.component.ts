@@ -5,9 +5,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { SnackbarService } from '../../shared/services/snackbar.service';
 
 @Component({
   selector: 'app-login',
@@ -18,16 +19,17 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    RouterLink
 ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent {
-  // ✅ use inject() instead of constructor
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private snackbar = inject(SnackbarService) as any;
 
   // ✅ signal for loading state
   loading = signal(false);
@@ -45,25 +47,43 @@ export class LoginComponent {
       this.loading.set(true); // show loading
 
       this.auth.login(email!, password!).subscribe({
-        next: users => {
+        next: (user: any) => {
           this.loading.set(false);
-          if (users.length > 0) {
-            this.auth.saveUser(users[0]);
+          if (user?.id) {
             this.router.navigate(['/dashboard']);
-          } else {
-            alert('Invalid credentials');
-          }
+              return;
+            }
+            this.showSnackbar('⚠️ Invalid email or password. Please try again.');
         },
-        error: () => {
+        error: (err: any) => {
           this.loading.set(false);
-          alert('Error connecting to server');
+          const message = err?.message || err?.code || 'Failed to connect to server. Please check your connection.';
+            this.showSnackbar('⚠️ ' + message);
         }
       });
     } else {
-      alert('Please fill in all required fields correctly.');
+        this.showSnackbar('⚠️ Please fill out all required fields correctly.');
     }
   }
   onCreateAccountClick() {
   this.router.navigate(['/register']);
 }
+
+  // helper to show snackbar (tolerant to .show() or .open())
+  private showSnackbar(message: string) {
+    try {
+      const s: any = this.snackbar;
+      // use project SnackbarService API: success/error/info
+      if (s?.success && message.startsWith('✅')) s.success(message);
+      else if (s?.error && (message.startsWith('⚠️') || /error|failed|invalid/i.test(message))) s.error(message);
+      else if (s?.info) s.info(message);
+      else {
+        // fallback to MatSnackBar open directly if available
+        if (s?.open) s.open(message, 'OK', { duration: 3000 });
+    else /* no snackbar implementation available */;
+      }
+    } catch (e) {
+      /* snackbar show failed */
+    }
+  }
 }

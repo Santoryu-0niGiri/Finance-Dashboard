@@ -98,70 +98,72 @@
       }
     </div>
 
-    @if (goals.length > 0) {
-      <div class="goals-grid">
-        @for (g of goals; track trackByGoal($index, g)) {
-          <div class="goal-card">
-            <div class="goal-header">
-              <div class="goal-info">
-                <h3 class="goal-title">{{ g.title }}</h3>
-                @if (g.targetDate) {
-                  <div class="goal-deadline">
-                    <mat-icon>schedule</mat-icon>
-                    <span>{{ g.targetDate | date:'mediumDate' }}</span>
+  @if (loading.isLoading()) {
+  <div class="spinner-container">
+    <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
+  </div>
+   } @else {
+      @if (goals.length > 0) {
+        <div class="goals-grid">
+          @for (g of goals; track trackByGoal($index, g)) {
+            <div class="goal-card">
+              <div class="goal-header">
+                <div class="goal-info">
+                  <h3 class="goal-title">{{ g.title }}</h3>
+                  @if (g.targetDate) {
+                    <div class="goal-deadline">
+                      <mat-icon>schedule</mat-icon>
+                      <span>{{ g.targetDate | date:'mediumDate' }}</span>
+                    </div>
+                  }
+                </div>
+                <div class="goal-actions">
+                  <button mat-icon-button (click)="editGoal(g)" class="edit-btn" matTooltip="Edit Goal">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button (click)="deleteGoal(g.id)" class="delete-btn" matTooltip="Delete Goal">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </div>
+              <div class="goal-amounts">
+                <div class="amount-item current">
+                  <span class="amount-label">Saved</span>
+                  <span class="amount-value">{{ (g.currentAmount || 0) | currency:'PHP' }}</span>
+                </div>
+                <div class="amount-item target">
+                  <span class="amount-label">Target</span>
+                  <span class="amount-value">{{ g.targetAmount | currency:'PHP' }}</span>
+                </div>
+              </div>
+              <div class="goal-progress">
+                <div class="progress-header">
+                  <span class="progress-label">Progress</span>
+                  <span class="progress-percentage">{{ getGoalProgress(g) }}%</span>
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar">
+                    <div class="progress-fill" [style.width.%]="getGoalProgress(g)"></div>
+                  </div>
+                </div>
+                @if (getRemainingAmount(g) > 0) {
+                  <div class="progress-remaining">
+                    <span>{{ getRemainingAmount(g) | currency:'PHP' }} remaining</span>
                   </div>
                 }
               </div>
-              <div class="goal-actions">
-                <button mat-icon-button (click)="editGoal(g)" class="edit-btn" matTooltip="Edit Goal">
-                  <mat-icon>edit</mat-icon>
-                </button>
-                <button mat-icon-button (click)="deleteGoal(g.id)" class="delete-btn" matTooltip="Delete Goal">
-                  <mat-icon>delete</mat-icon>
-                </button>
-              </div>
             </div>
-            <div class="goal-amounts">
-              <div class="amount-item current">
-                <span class="amount-label">Saved</span>
-                <span class="amount-value">{{ (g.currentAmount || 0) | currency:'PHP' }}</span>
-              </div>
-              <div class="amount-item target">
-                <span class="amount-label">Target</span>
-                <span class="amount-value">{{ g.targetAmount | currency:'PHP' }}</span>
-              </div>
-            </div>
-            <div class="goal-progress">
-              <div class="progress-header">
-                <span class="progress-label">Progress</span>
-                <span class="progress-percentage">{{ getGoalProgress(g) }}%</span>
-              </div>
-              <div class="progress-bar-container">
-                <div class="progress-bar">
-                  <div class="progress-fill" [style.width.%]="getGoalProgress(g)"></div>
-                </div>
-              </div>
-              @if (getRemainingAmount(g) > 0) {
-                <div class="progress-remaining">
-                  <span>{{ getRemainingAmount(g) | currency:'PHP' }} remaining</span>
-                </div>
-              }
-            </div>
-          </div>
-        }
-      </div>
-    } @else {
-      <div class="empty-state">
-        <div class="empty-icon">
-          <mat-icon>flag_off</mat-icon>
+          }
         </div>
-        <h3>No Goals Yet</h3>
-        <p>Start your financial journey by creating your first goal</p>
-        <button mat-raised-button color="primary" (click)="scrollToForm()">
-          <mat-icon>add</mat-icon>
-          Create Your First Goal
-        </button>
-      </div>
+      } @else {
+        <div class="empty-state">
+          <div class="empty-icon">
+            <mat-icon>flag_off</mat-icon>
+          </div>
+          <h3>No Goals Yet</h3>
+          <p>Start your financial journey by creating your first goal</p>
+        </div>
+      }
     }
 
   </div>

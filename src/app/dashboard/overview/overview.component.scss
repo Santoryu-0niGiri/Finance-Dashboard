@@ -4,6 +4,29 @@
   flex-direction: column;
   gap: 16px;
   background: transparent;
+  position: relative;
+}
+
+.spinner-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  gap: 1rem;
+
+  p {
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 0;
+  }
 }
 
 /* layout: main + sidebar */
@@ -459,14 +482,14 @@ mat-card {
 
   /* make the "View All" text button use primary color */
   >mat-card-title button[mat-button] {
-    color: var(--mdc-theme-primary, var(--primary)) !important;
+    color: var(--mat-theme-primary, var(--primary)) !important;
     text-transform: none;
   }
 
   /* if you prefer the button to be stroked */
   >mat-card-title button[mat-stroked-button] {
     border-color: rgba(255, 255, 255, 0.06) !important;
-    color: var(--mdc-theme-primary, var(--primary)) !important;
+    color: var(--mat-theme-primary, var(--primary)) !important;
     background: transparent !important;
   }
 
